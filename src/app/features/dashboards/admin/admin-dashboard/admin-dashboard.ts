@@ -30,13 +30,58 @@ interface SummaryCard {
   styleUrls: ['./admin-dashboard.scss'],
 })
 export class AdminDashboard implements OnInit {
-  loggedUser: LoggedUser | null = null;
 
+  activeSection:
+    | 'overview'
+    | 'users'
+    | 'leads'
+    | 'ai'
+    | 'fraud'
+    | 'recommendations'
+    | 'experiments' = 'overview';
+
+  menuItems = [
+    {
+      key: 'overview',
+      label: 'Dashboard Overview',
+      icon: '📊'
+    },
+    {
+      key: 'users',
+      label: 'User Management',
+      icon: '👥'
+    },
+    {
+      key: 'leads',
+      label: 'Lead Management',
+      icon: '📋'
+    },
+    {
+      key: 'ai',
+      label: 'AI Analytics',
+      icon: '🤖'
+    },
+    {
+      key: 'fraud',
+      label: 'Fraud & Risk',
+      icon: '🚨'
+    },
+    {
+      key: 'recommendations',
+      label: 'Recommendations',
+      icon: '💡'
+    },
+    {
+      key: 'experiments',
+      label: 'ML Experiments',
+      icon: '🧪'
+    }
+  ];
+  loggedUser: LoggedUser | null = null;
   isLoading = false;
   isPipelineRunning = false;
   errorMessage = '';
   pipelineMessage = '';
-
   users: any[] = [];
   leads: any[] = [];
   performanceRecords: any[] = [];
@@ -44,13 +89,11 @@ export class AdminDashboard implements OnInit {
   fraudAlerts: any[] = [];
   recommendations: any[] = [];
   mlExperiments: any[] = [];
-
   roleChartOption: EChartsCoreOption = {};
   leadStatusChartOption: EChartsCoreOption = {};
   performanceChartOption: EChartsCoreOption = {};
   predictionChartOption: EChartsCoreOption = {};
   alertChartOption: EChartsCoreOption = {};
-
   summaryCards: SummaryCard[] = [];
 
   constructor(
@@ -65,6 +108,10 @@ export class AdminDashboard implements OnInit {
 
   get roleLabel(): string {
     return this.loggedUser?.roles?.join(', ') || 'ADMIN';
+  }
+
+  setActiveSection(section: any): void {
+    this.activeSection = section;
   }
 
   ngOnInit(): void {
