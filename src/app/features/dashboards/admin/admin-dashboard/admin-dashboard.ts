@@ -1,35 +1,417 @@
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {forkJoin} from 'rxjs';
 import {NgxEchartsDirective} from 'ngx-echarts';
 import {EChartsCoreOption} from 'echarts/core';
+
+import {DashboardService} from '../../../../core/services/dashboard.service';
+import {AuthService} from '../../../../core/services/auth.service';
+
+interface LoggedUser {
+  id?: number;
+  username?: string;
+  nickname?: string;
+  email?: string;
+  roles?: string[];
+}
+
+interface SummaryCard {
+  title: string;
+  value: number | string;
+  icon: string;
+  tone: 'blue' | 'green' | 'orange' | 'red' | 'purple' | 'dark';
+}
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [NgxEchartsDirective],
+  imports: [CommonModule, NgxEchartsDirective],
   templateUrl: './admin-dashboard.html',
-  styleUrl: './admin-dashboard.scss',
+  styleUrls: ['./admin-dashboard.scss'],
 })
-export class AdminDashboard {
-  chartOption: EChartsCoreOption = {
-    title: {
-      text: 'Monthly Leads',
-    },
-    tooltip: {
-      trigger: 'axis',
-    },
-    xAxis: {
-      type: 'category',
-      data: ['Jan', 'Feb', 'Mar', 'Apr'],
-    },
-    yAxis: {
-      type: 'value',
-    },
-    series: [
-      {
-        name: 'Leads',
-        type: 'bar',
-        data: [12, 25, 18, 40],
+export class AdminDashboard implements OnInit {
+  loggedUser: LoggedUser | null = null;
+
+  isLoading = false;
+  isPipelineRunning = false;
+  errorMessage = '';
+  pipelineMessage = '';
+
+  users: any[] = [];
+  leads: any[] = [];
+  performanceRecords: any[] = [];
+  aiPredictions: any[] = [];
+  fraudAlerts: any[] = [];
+  recommendations: any[] = [];
+  mlExperiments: any[] = [];
+
+  roleChartOption: EChartsCoreOption = {};
+  leadStatusChartOption: EChartsCoreOption = {};
+  performanceChartOption: EChartsCoreOption = {};
+  predictionChartOption: EChartsCoreOption = {};
+  alertChartOption: EChartsCoreOption = {};
+
+  summaryCards: SummaryCard[] = [];
+
+  constructor(
+    private dashboardService: DashboardService,
+    private authService: AuthService
+  ) {
+  }
+
+  get displayName(): string {
+    return this.loggedUser?.nickname || this.loggedUser?.username || 'Administrator';
+  }
+
+  get roleLabel(): string {
+    return this.loggedUser?.roles?.join(', ') || 'ADMIN';
+  }
+
+  ngOnInit(): void {
+    this.loadLoggedUser();
+    this.loadDashboardData();
+  }
+
+  loadDashboardData(): void {
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.pipelineMessage = '';
+
+    forkJoin({
+      users: this.dashboardService.getUsers(),
+      leads: this.dashboardService.getLeads(),
+      performance: this.dashboardService.getAgentPerformanceByMonth(2026, 5),
+      predictions: this.dashboardService.getAiPredictionsByMonth(2026, 6),
+      fraudAlerts: this.dashboardService.getFraudAlerts(),
+      recommendations: this.dashboardService.getRecommendations(),
+      experiments: this.dashboardService.getMlExperiments()
+    }).subscribe({
+      next: (response) => {
+        this.users = response.users || [];
+        this.leads = response.leads || [];
+        this.performanceRecords = response.performance || [];
+        this.aiPredictions = response.predictions || [];
+        this.fraudAlerts = response.fraudAlerts || [];
+        this.recommendations = response.recommendations || [];
+        this.mlExperiments = response.experiments || [];
+
+        this.updateSummaryCards();
+        this.buildCharts();
+
+        this.isLoading = false;
       },
-    ],
-  };
+      error: (error) => {
+        console.error('Dashboard load failed', error);
+        this.errorMessage = 'Dashboard data load failed. Please check backend API, CORS, and Spring Boot server.';
+        this.isLoading = false;
+      }
+    });
+  }
+
+  runAiPipeline(): void {
+    this.isPipelineRunning = true;
+    this.pipelineMessage = '';
+    this.errorMessage = '';
+
+    this.dashboardService.runAiPipeline().subscribe({
+      next: (response) => {
+        this.isPipelineRunning = false;
+
+        if (response?.success) {
+          this.pipelineMessage = 'AI pipeline completed successfully.';
+          this.loadDashboardData();
+        } else {
+          this.errorMessage = response?.message || 'AI pipeline failed.';
+        }
+      },
+      error: (error) => {
+        console.error('AI pipeline failed', error);
+        this.isPipelineRunning = false;
+        this.errorMessage = 'AI pipeline API failed. Please check backend.';
+      }
+    });
+  }
+
+  getTotalAgents(): number {
+    return this.users.filter(user => (user.roles || []).includes('IC')).length;
+  }
+
+  getActiveLeads(): number {
+    return this.leads.filter(lead => {
+      const status = lead.status;
+      return status === 'NEW' || status === 'IN_PROGRESS' || status === 'QUOTATION_SUBMITTED';
+    }).length;
+  }
+
+  getCompletedLeads(): number {
+    return this.leads.filter(lead => lead.status === 'COMPLETED').length;
+  }
+
+  getCancelledLeads(): number {
+    return this.leads.filter(lead => lead.status === 'CANCELLED').length;
+  }
+
+  getOpenFraudAlertCount(): number {
+    return this.fraudAlerts.filter(alert => alert.status === 'OPEN').length;
+  }
+
+  getAveragePerformanceScore(): number {
+    if (!this.performanceRecords.length) {
+      return 0;
+    }
+
+    const total = this.performanceRecords.reduce((sum, item) => {
+      return sum + Number(item.performanceScore || 0);
+    }, 0);
+
+    return total / this.performanceRecords.length;
+  }
+
+  getTopPerformers(): any[] {
+    return [...this.performanceRecords]
+      .sort((a, b) => Number(b.performanceScore || 0) - Number(a.performanceScore || 0))
+      .slice(0, 6);
+  }
+
+  getLowPerformers(): any[] {
+    return [...this.performanceRecords]
+      .sort((a, b) => Number(a.performanceScore || 0) - Number(b.performanceScore || 0))
+      .slice(0, 6);
+  }
+
+  getOpenFraudAlerts(): any[] {
+    return this.fraudAlerts
+      .filter(item => item.status === 'OPEN')
+      .slice(0, 5);
+  }
+
+  getLatestRecommendations(): any[] {
+    return [...this.recommendations]
+      .sort((a, b) => {
+        const dateA = new Date(a.generatedAt || '').getTime();
+        const dateB = new Date(b.generatedAt || '').getTime();
+        return dateB - dateA;
+      })
+      .slice(0, 6);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    window.location.href = '/';
+  }
+
+  private loadLoggedUser(): void {
+    const storedUser = localStorage.getItem('user');
+    const storedRoles = localStorage.getItem('roles');
+
+    let roles: string[] = [];
+
+    if (storedRoles) {
+      try {
+        roles = JSON.parse(storedRoles);
+      } catch {
+        roles = [];
+      }
+    }
+
+    if (!storedUser) {
+      this.loggedUser = {
+        username: 'admin',
+        nickname: 'Administrator',
+        email: 'admin@gmail.com',
+        roles: roles.length ? roles : ['ADMIN']
+      };
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(storedUser);
+
+      this.loggedUser = {
+        ...parsedUser,
+        roles: parsedUser.roles || roles
+      };
+    } catch {
+      this.loggedUser = {
+        username: 'admin',
+        nickname: 'Administrator',
+        email: 'admin@gmail.com',
+        roles: roles.length ? roles : ['ADMIN']
+      };
+    }
+  }
+
+  private updateSummaryCards(): void {
+    this.summaryCards = [
+      {
+        title: 'Total Users',
+        value: this.users.length,
+        icon: '👥',
+        tone: 'blue'
+      },
+      {
+        title: 'Total Leads',
+        value: this.leads.length,
+        icon: '📋',
+        tone: 'green'
+      },
+      {
+        title: 'AI Predictions',
+        value: this.aiPredictions.length,
+        icon: '🤖',
+        tone: 'purple'
+      },
+      {
+        title: 'Open Fraud Alerts',
+        value: this.getOpenFraudAlertCount(),
+        icon: '🚨',
+        tone: 'red'
+      },
+      {
+        title: 'Recommendations',
+        value: this.recommendations.length,
+        icon: '💡',
+        tone: 'orange'
+      },
+      {
+        title: 'ML Experiments',
+        value: this.mlExperiments.length,
+        icon: '🧪',
+        tone: 'dark'
+      }
+    ];
+  }
+
+  private buildCharts(): void {
+    this.buildRoleChart();
+    this.buildLeadStatusChart();
+    this.buildPerformanceChart();
+    this.buildPredictionChart();
+    this.buildAlertChart();
+  }
+
+  private buildRoleChart(): void {
+    const roles = ['ADMIN', 'SH', 'ZO', 'RM', 'BM', 'UL', 'IC'];
+
+    const data = roles.map(role => {
+      return this.users.filter(user => {
+        const userRoles = user.roles || [];
+        return userRoles.includes(role);
+      }).length;
+    });
+
+    this.roleChartOption = {
+      title: {text: 'Users by Role', left: 'center'},
+      tooltip: {trigger: 'axis'},
+      grid: {left: 42, right: 24, top: 62, bottom: 38},
+      xAxis: {type: 'category', data: roles},
+      yAxis: {type: 'value'},
+      series: [
+        {
+          name: 'Users',
+          type: 'bar',
+          data
+        }
+      ]
+    };
+  }
+
+  private buildLeadStatusChart(): void {
+    const statuses = this.getUniqueValues(this.leads, 'status');
+
+    const data = statuses.map(status => ({
+      name: status,
+      value: this.leads.filter(lead => lead.status === status).length
+    }));
+
+    this.leadStatusChartOption = {
+      title: {text: 'Lead Status Distribution', left: 'center'},
+      tooltip: {trigger: 'item'},
+      legend: {bottom: 0},
+      series: [
+        {
+          name: 'Leads',
+          type: 'pie',
+          radius: ['45%', '70%'],
+          data
+        }
+      ]
+    };
+  }
+
+  private buildPerformanceChart(): void {
+    const topAgents = this.getTopPerformers();
+
+    this.performanceChartOption = {
+      title: {text: 'Top Agent Performance', left: 'center'},
+      tooltip: {trigger: 'axis'},
+      grid: {left: 42, right: 24, top: 62, bottom: 44},
+      xAxis: {
+        type: 'category',
+        data: topAgents.map(item => item.nickname || item.username || item.agentId)
+      },
+      yAxis: {type: 'value', max: 100},
+      series: [
+        {
+          name: 'Performance Score',
+          type: 'bar',
+          data: topAgents.map(item => Number(item.performanceScore || 0))
+        }
+      ]
+    };
+  }
+
+  private buildPredictionChart(): void {
+    const low = this.aiPredictions.filter(item => item.riskLevel === 'LOW').length;
+    const medium = this.aiPredictions.filter(item => item.riskLevel === 'MEDIUM').length;
+    const high = this.aiPredictions.filter(item => item.riskLevel === 'HIGH').length;
+
+    this.predictionChartOption = {
+      title: {text: 'AI Prediction Risk', left: 'center'},
+      tooltip: {trigger: 'item'},
+      legend: {bottom: 0},
+      series: [
+        {
+          name: 'Risk Level',
+          type: 'pie',
+          radius: ['45%', '70%'],
+          data: [
+            {value: low, name: 'LOW'},
+            {value: medium, name: 'MEDIUM'},
+            {value: high, name: 'HIGH'}
+          ]
+        }
+      ]
+    };
+  }
+
+  private buildAlertChart(): void {
+    const critical = this.fraudAlerts.filter(item => item.severity === 'CRITICAL').length;
+    const high = this.fraudAlerts.filter(item => item.severity === 'HIGH').length;
+    const medium = this.fraudAlerts.filter(item => item.severity === 'MEDIUM').length;
+    const low = this.fraudAlerts.filter(item => item.severity === 'LOW').length;
+
+    this.alertChartOption = {
+      title: {text: 'Fraud Alert Severity', left: 'center'},
+      tooltip: {trigger: 'axis'},
+      grid: {left: 42, right: 24, top: 62, bottom: 38},
+      xAxis: {type: 'category', data: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']},
+      yAxis: {type: 'value'},
+      series: [
+        {
+          name: 'Alerts',
+          type: 'bar',
+          data: [critical, high, medium, low]
+        }
+      ]
+    };
+  }
+
+  private getUniqueValues(items: any[], fieldName: string): string[] {
+    const values = items
+      .map(item => item[fieldName])
+      .filter(value => !!value);
+
+    return [...new Set(values)];
+  }
 }
