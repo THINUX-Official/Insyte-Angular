@@ -7,7 +7,7 @@ import {Observable} from "rxjs";
 @Injectable({
   providedIn: 'root',
 })
-export class Auth {
+export class AuthService {
 
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl;
@@ -39,12 +39,13 @@ export class Auth {
 
   getDashboardRoute(roles: string[]): string {
     if (roles.includes('ADMIN')) return '/admin';
-    if (roles.includes('IC')) return '/ic';
-    if (roles.includes('UL')) return '/ul';
-    if (roles.includes('BM')) return '/bm';
-    if (roles.includes('RM')) return '/rm';
-    if (roles.includes('ZO')) return '/zo';
     if (roles.includes('SH')) return '/sh';
+    if (roles.includes('ZO')) return '/zo';
+    if (roles.includes('RM')) return '/rm';
+    if (roles.includes('BM')) return '/bm';
+    if (roles.includes('UL')) return '/ul';
+    if (roles.includes('IC')) return '/ic';
+
     return '/unauthorized';
   }
 }

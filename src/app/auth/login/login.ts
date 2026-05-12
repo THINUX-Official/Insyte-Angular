@@ -8,7 +8,7 @@ import {MatIconButton} from '@angular/material/button';
 import {MatIcon} from '@angular/material/icon';
 import {MatCheckbox} from '@angular/material/checkbox';
 import {Router} from '@angular/router';
-import {Auth} from '../../core/services/auth';
+import {AuthService} from '../../core/services/auth.service';
 import {finalize} from 'rxjs';
 
 @Component({
@@ -39,7 +39,7 @@ export class Login {
     rememberMe: new FormControl(false),
   });
 
-  constructor(private authService: Auth, private router: Router) {
+  constructor(private authService: AuthService, private router: Router) {
   }
 
   forgetPassword(): void {
