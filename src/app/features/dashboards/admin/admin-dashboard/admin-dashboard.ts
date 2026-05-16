@@ -1,23 +1,24 @@
 import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {forkJoin} from 'rxjs';
-import {NgxEchartsDirective} from 'ngx-echarts';
 import {EChartsCoreOption} from 'echarts/core';
 
 import {DashboardService} from '../../../../core/services/dashboard.service';
 import {AuthService} from '../../../../core/services/auth.service';
 import {AppPermission, AppPermissions} from '../../../../core/permissions/app-permissions';
+
 import {SummaryCard} from '../../../../shared/components/dashboard/summary-card/summary-card';
+import {DashboardSidebar} from '../../../../shared/components/dashboard/dashboard-sidebar/dashboard-sidebar';
+import {DashboardTopbar} from '../../../../shared/components/dashboard/dashboard-topbar/dashboard-topbar';
+import {ChartPanel} from '../../../../shared/components/dashboard/chart-panel/chart-panel';
+import {DataTablePanel} from '../../../../shared/components/dashboard/data-table-panel/data-table-panel';
+
 import {
   DashboardSummaryCard,
   DashboardTableAction,
   DashboardTableColumn,
   DashboardUserInfo
 } from '../../../../shared/components/models/dashboard-ui.model';
-import {DashboardSidebar} from '../../../../shared/components/dashboard/dashboard-sidebar/dashboard-sidebar';
-import {DashboardTopbar} from '../../../../shared/components/dashboard/dashboard-topbar/dashboard-topbar';
-import {ChartPanel} from '../../../../shared/components/dashboard/chart-panel/chart-panel';
-import {DataTablePanel} from '../../../../shared/components/dashboard/data-table-panel/data-table-panel';
 
 interface LoggedUser {
   id?: number;
@@ -46,7 +47,14 @@ interface MenuItem {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, NgxEchartsDirective, SummaryCard, DashboardSidebar, DashboardTopbar, ChartPanel, DataTablePanel],
+  imports: [
+    CommonModule,
+    SummaryCard,
+    DashboardSidebar,
+    DashboardTopbar,
+    ChartPanel,
+    DataTablePanel
+  ],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
 })
@@ -123,21 +131,6 @@ export class AdminDashboard implements OnInit {
     }
   ];
 
-  constructor(
-    private dashboardService: DashboardService,
-    private authService: AuthService
-  ) {
-  }
-
-  get sidebarUserInfo(): DashboardUserInfo {
-    return {
-      username: this.loggedUser?.username || 'admin',
-      displayName: this.displayName,
-      email: this.loggedUser?.email,
-      roleLabel: this.roleLabel
-    };
-  }
-
   userColumns: DashboardTableColumn[] = [
     {key: 'username', label: 'Username'},
     {key: 'nickname', label: 'Name'},
@@ -162,6 +155,14 @@ export class AdminDashboard implements OnInit {
     {key: 'performanceScore', label: 'Score', type: 'number'}
   ];
 
+  recommendationColumns: DashboardTableColumn[] = [
+    {key: 'title', label: 'Title'},
+    {key: 'recommendationType', label: 'Type'},
+    {key: 'priority', label: 'Priority', type: 'badge'},
+    {key: 'username', label: 'Agent'},
+    {key: 'recommendationText', label: 'Recommendation'}
+  ];
+
   mlExperimentColumns: DashboardTableColumn[] = [
     {key: 'modelName', label: 'Model'},
     {key: 'modelType', label: 'Type'},
@@ -172,69 +173,25 @@ export class AdminDashboard implements OnInit {
     {key: 'r2Score', label: 'R²', type: 'number'}
   ];
 
-  getUserActions(): DashboardTableAction[] {
-    const actions: DashboardTableAction[] = [];
-
-    if (this.can(this.permissions.USER_UPDATE)) {
-      actions.push({
-        label: 'Edit',
-        icon: '✏️',
-        tone: 'primary',
-        action: 'edit'
-      });
-    }
-
-    if (this.can(this.permissions.USER_DELETE)) {
-      actions.push({
-        label: 'Delete',
-        icon: '🗑️',
-        tone: 'danger',
-        action: 'delete'
-      });
-    }
-
-    return actions;
+  constructor(
+    private dashboardService: DashboardService,
+    private authService: AuthService
+  ) {
   }
 
-  getLeadActions(): DashboardTableAction[] {
-    const actions: DashboardTableAction[] = [];
-
-    if (this.can(this.permissions.LEAD_VIEW)) {
-      actions.push({
-        label: 'View',
-        icon: '👁️',
-        tone: 'primary',
-        action: 'view'
-      });
-    }
-
-    if (this.can(this.permissions.LEAD_UPDATE)) {
-      actions.push({
-        label: 'Edit',
-        icon: '✏️',
-        tone: 'primary',
-        action: 'edit'
-      });
-    }
-
-    if (this.can(this.permissions.LEAD_DELETE)) {
-      actions.push({
-        label: 'Delete',
-        icon: '🗑️',
-        tone: 'danger',
-        action: 'delete'
-      });
-    }
-
-    return actions;
+  ngOnInit(): void {
+    this.loadLoggedUser();
+    this.setDefaultSectionByPermission();
+    this.loadDashboardData();
   }
 
-  onUserAction(event: { action: string; row: any }): void {
-    console.log('User action:', event.action, event.row);
-  }
-
-  onLeadAction(event: { action: string; row: any }): void {
-    console.log('Lead action:', event.action, event.row);
+  get sidebarUserInfo(): DashboardUserInfo {
+    return {
+      username: this.loggedUser?.username || 'admin',
+      displayName: this.displayName,
+      email: this.loggedUser?.email,
+      roleLabel: this.roleLabel
+    };
   }
 
   get displayName(): string {
@@ -243,12 +200,6 @@ export class AdminDashboard implements OnInit {
 
   get roleLabel(): string {
     return this.loggedUser?.roles?.join(', ') || '-';
-  }
-
-  ngOnInit(): void {
-    this.loadLoggedUser();
-    this.setDefaultSectionByPermission();
-    this.loadDashboardData();
   }
 
   can(permission: AppPermission): boolean {
@@ -332,6 +283,97 @@ export class AdminDashboard implements OnInit {
     });
   }
 
+  getUserActions(): DashboardTableAction[] {
+    const actions: DashboardTableAction[] = [];
+
+    if (this.can(this.permissions.USER_UPDATE)) {
+      actions.push({
+        label: 'Edit',
+        icon: '✏️',
+        tone: 'primary',
+        action: 'edit'
+      });
+    }
+
+    if (this.can(this.permissions.USER_DELETE)) {
+      actions.push({
+        label: 'Delete',
+        icon: '🗑️',
+        tone: 'danger',
+        action: 'delete'
+      });
+    }
+
+    return actions;
+  }
+
+  getLeadActions(): DashboardTableAction[] {
+    const actions: DashboardTableAction[] = [];
+
+    if (this.can(this.permissions.LEAD_VIEW)) {
+      actions.push({
+        label: 'View',
+        icon: '👁️',
+        tone: 'primary',
+        action: 'view'
+      });
+    }
+
+    if (this.can(this.permissions.LEAD_UPDATE)) {
+      actions.push({
+        label: 'Edit',
+        icon: '✏️',
+        tone: 'primary',
+        action: 'edit'
+      });
+    }
+
+    if (this.can(this.permissions.LEAD_DELETE)) {
+      actions.push({
+        label: 'Delete',
+        icon: '🗑️',
+        tone: 'danger',
+        action: 'delete'
+      });
+    }
+
+    return actions;
+  }
+
+  getFraudActions(): DashboardTableAction[] {
+    const actions: DashboardTableAction[] = [];
+
+    if (this.can(this.permissions.FRAUD_REVIEW)) {
+      actions.push({
+        label: 'Review',
+        icon: '👁️',
+        tone: 'warning',
+        action: 'review'
+      });
+
+      actions.push({
+        label: 'Resolve',
+        icon: '✅',
+        tone: 'success',
+        action: 'resolve'
+      });
+    }
+
+    return actions;
+  }
+
+  onUserAction(event: { action: string; row: any }): void {
+    console.log('User action:', event.action, event.row);
+  }
+
+  onLeadAction(event: { action: string; row: any }): void {
+    console.log('Lead action:', event.action, event.row);
+  }
+
+  onFraudAction(event: { action: string; row: any }): void {
+    console.log('Fraud action:', event.action, event.row);
+  }
+
   getTotalAgents(): number {
     return this.users.filter(user => (user.roles || []).includes('IC')).length;
   }
@@ -382,7 +424,7 @@ export class AdminDashboard implements OnInit {
   getOpenFraudAlerts(): any[] {
     return this.fraudAlerts
       .filter(item => item.status === 'OPEN')
-      .slice(0, 5);
+      .slice(0, 10);
   }
 
   getLatestRecommendations(): any[] {
@@ -392,7 +434,7 @@ export class AdminDashboard implements OnInit {
         const dateB = new Date(b.generatedAt || '').getTime();
         return dateB - dateA;
       })
-      .slice(0, 6);
+      .slice(0, 10);
   }
 
   logout(): void {

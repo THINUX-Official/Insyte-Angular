@@ -93,6 +93,7 @@
 
       <!-- LEADS -->
       <section *ngIf="activeSection === 'leads'" class="dashboard-section">
+
         <div class="section-title">
           <h2>My Leads</h2>
           <p>Create and update your own leads. Delete access is restricted to administrators.</p>
@@ -122,10 +123,12 @@
             (actionClick)="onLeadAction($event)"
           ></app-data-table-panel>
         </div>
+
       </section>
 
       <!-- PERFORMANCE -->
       <section *ngIf="activeSection === 'performance'" class="dashboard-section">
+
         <div class="section-title">
           <h2>My Performance</h2>
           <p>Monthly performance score, target achievement and AI prediction.</p>
@@ -156,26 +159,29 @@
           [rows]="myPerformance"
           emptyMessage="No performance records found for your account."
         ></app-data-table-panel>
+
       </section>
 
       <!-- RECOMMENDATIONS -->
       <section *ngIf="activeSection === 'recommendations'" class="dashboard-section">
+
         <div class="section-title">
           <h2>My Recommendations</h2>
           <p>AI-generated suggestions to improve lead follow-up and performance.</p>
         </div>
 
         <app-data-table-panel
-          [columns]="leadColumns"
-          [rows]="myLeads"
-          [actions]="getLeadActions()"
-          [pageSize]="50"
+          title="My Recommendations"
+          subtitle="AI-generated suggestions assigned to your profile."
+          [columns]="recommendationColumns"
+          [rows]="myRecommendations"
           emptyMessage="No recommendations found for your account."
-          (actionClick)="onLeadAction($event)"
         ></app-data-table-panel>
+
       </section>
 
     </ng-container>
 
   </main>
+
 </div>

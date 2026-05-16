@@ -6,17 +6,19 @@ import {EChartsCoreOption} from 'echarts/core';
 import {DashboardService} from '../../../../core/services/dashboard.service';
 import {AuthService} from '../../../../core/services/auth.service';
 import {AppPermission, AppPermissions} from '../../../../core/permissions/app-permissions';
+
+import {SummaryCard} from '../../../../shared/components/dashboard/summary-card/summary-card';
+import {DashboardSidebar} from '../../../../shared/components/dashboard/dashboard-sidebar/dashboard-sidebar';
+import {DashboardTopbar} from '../../../../shared/components/dashboard/dashboard-topbar/dashboard-topbar';
+import {ChartPanel} from '../../../../shared/components/dashboard/chart-panel/chart-panel';
+import {DataTablePanel} from '../../../../shared/components/dashboard/data-table-panel/data-table-panel';
+
 import {
   DashboardSummaryCard,
   DashboardTableAction,
   DashboardTableColumn,
   DashboardUserInfo
 } from '../../../../shared/components/models/dashboard-ui.model';
-import {SummaryCard} from '../../../../shared/components/dashboard/summary-card/summary-card';
-import {DashboardSidebar} from '../../../../shared/components/dashboard/dashboard-sidebar/dashboard-sidebar';
-import {DashboardTopbar} from '../../../../shared/components/dashboard/dashboard-topbar/dashboard-topbar';
-import {ChartPanel} from '../../../../shared/components/dashboard/chart-panel/chart-panel';
-import {DataTablePanel} from '../../../../shared/components/dashboard/data-table-panel/data-table-panel';
 
 interface LoggedUser {
   id?: number;
@@ -44,7 +46,14 @@ interface MenuItem {
 @Component({
   selector: 'app-ic-dashboard',
   standalone: true,
-  imports: [CommonModule, SummaryCard, DashboardSidebar, DashboardTopbar, ChartPanel, DataTablePanel],
+  imports: [
+    CommonModule,
+    SummaryCard,
+    DashboardSidebar,
+    DashboardTopbar,
+    ChartPanel,
+    DataTablePanel
+  ],
   templateUrl: './ic-dashboard.html',
   styleUrls: ['./ic-dashboard.scss'],
 })
@@ -102,21 +111,6 @@ export class IcDashboard implements OnInit {
     }
   ];
 
-  constructor(
-    private dashboardService: DashboardService,
-    private authService: AuthService
-  ) {
-  }
-
-  get sidebarUserInfo(): DashboardUserInfo {
-    return {
-      username: this.loggedUser?.username || 'agent',
-      displayName: this.displayName,
-      email: this.loggedUser?.email,
-      roleLabel: this.roleLabel
-    };
-  }
-
   leadColumns: DashboardTableColumn[] = [
     {key: 'id', label: 'ID'},
     {key: 'customerName', label: 'Customer'},
@@ -135,41 +129,32 @@ export class IcDashboard implements OnInit {
     {key: 'performanceScore', label: 'Score', type: 'number'}
   ];
 
-  getLeadActions(): DashboardTableAction[] {
-    const actions: DashboardTableAction[] = [];
+  recommendationColumns: DashboardTableColumn[] = [
+    {key: 'title', label: 'Title'},
+    {key: 'recommendationType', label: 'Type'},
+    {key: 'priority', label: 'Priority', type: 'badge'},
+    {key: 'recommendationText', label: 'Recommendation'}
+  ];
 
-    if (this.can(this.permissions.LEAD_VIEW)) {
-      actions.push({
-        label: 'View',
-        icon: '👁️',
-        tone: 'primary',
-        action: 'view'
-      });
-    }
-
-    if (this.can(this.permissions.LEAD_UPDATE)) {
-      actions.push({
-        label: 'Edit',
-        icon: '✏️',
-        tone: 'primary',
-        action: 'edit'
-      });
-    }
-
-    if (this.can(this.permissions.LEAD_DELETE)) {
-      actions.push({
-        label: 'Delete',
-        icon: '🗑️',
-        tone: 'danger',
-        action: 'delete'
-      });
-    }
-
-    return actions;
+  constructor(
+    private dashboardService: DashboardService,
+    private authService: AuthService
+  ) {
   }
 
-  onLeadAction(event: { action: string; row: any }): void {
-    console.log('IC Lead action:', event.action, event.row);
+  ngOnInit(): void {
+    this.loadLoggedUser();
+    this.setDefaultSectionByPermission();
+    this.loadDashboardData();
+  }
+
+  get sidebarUserInfo(): DashboardUserInfo {
+    return {
+      username: this.loggedUser?.username || 'agent',
+      displayName: this.displayName,
+      email: this.loggedUser?.email,
+      roleLabel: this.roleLabel
+    };
   }
 
   get displayName(): string {
@@ -178,12 +163,6 @@ export class IcDashboard implements OnInit {
 
   get roleLabel(): string {
     return this.loggedUser?.roles?.join(', ') || 'IC';
-  }
-
-  ngOnInit(): void {
-    this.loadLoggedUser();
-    this.setDefaultSectionByPermission();
-    this.loadDashboardData();
   }
 
   can(permission: AppPermission): boolean {
@@ -234,6 +213,43 @@ export class IcDashboard implements OnInit {
     });
   }
 
+  getLeadActions(): DashboardTableAction[] {
+    const actions: DashboardTableAction[] = [];
+
+    if (this.can(this.permissions.LEAD_VIEW)) {
+      actions.push({
+        label: 'View',
+        icon: '👁️',
+        tone: 'primary',
+        action: 'view'
+      });
+    }
+
+    if (this.can(this.permissions.LEAD_UPDATE)) {
+      actions.push({
+        label: 'Edit',
+        icon: '✏️',
+        tone: 'primary',
+        action: 'edit'
+      });
+    }
+
+    if (this.can(this.permissions.LEAD_DELETE)) {
+      actions.push({
+        label: 'Delete',
+        icon: '🗑️',
+        tone: 'danger',
+        action: 'delete'
+      });
+    }
+
+    return actions;
+  }
+
+  onLeadAction(event: { action: string; row: any }): void {
+    console.log('IC Lead action:', event.action, event.row);
+  }
+
   getLatestPerformance(): any | null {
     if (!this.myPerformance.length) {
       return null;
@@ -278,18 +294,6 @@ export class IcDashboard implements OnInit {
 
   getCancelledLeadCount(): number {
     return this.myLeads.filter(lead => lead.status === 'CANCELLED').length;
-  }
-
-  getLeadCustomerName(lead: any): string {
-    return lead.customerName || lead.name || lead.fullName || lead.clientName || '-';
-  }
-
-  getLeadMobile(lead: any): string {
-    return lead.mobile || lead.phone || lead.contactNumber || lead.customerMobile || '-';
-  }
-
-  getLeadPremium(lead: any): string | number {
-    return lead.premium || lead.expectedPremium || lead.totalPremium || '-';
   }
 
   logout(): void {
