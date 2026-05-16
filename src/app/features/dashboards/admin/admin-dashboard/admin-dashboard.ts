@@ -8,7 +8,8 @@ import {DashboardService} from '../../../../core/services/dashboard.service';
 import {AuthService} from '../../../../core/services/auth.service';
 import {AppPermission, AppPermissions} from '../../../../core/permissions/app-permissions';
 import {SummaryCard} from '../../../../shared/components/dashboard/summary-card/summary-card';
-import {DashboardSummaryCard} from '../../../../shared/components/models/dashboard-ui.model';
+import {DashboardSummaryCard, DashboardUserInfo} from '../../../../shared/components/models/dashboard-ui.model';
+import {DashboardSidebar} from '../../../../shared/components/dashboard/dashboard-sidebar/dashboard-sidebar';
 
 interface LoggedUser {
   id?: number;
@@ -37,7 +38,7 @@ interface MenuItem {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, NgxEchartsDirective, SummaryCard],
+  imports: [CommonModule, NgxEchartsDirective, SummaryCard, DashboardSidebar],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
 })
@@ -118,6 +119,15 @@ export class AdminDashboard implements OnInit {
     private dashboardService: DashboardService,
     private authService: AuthService
   ) {
+  }
+
+  get sidebarUserInfo(): DashboardUserInfo {
+    return {
+      username: this.loggedUser?.username || 'admin',
+      displayName: this.displayName,
+      email: this.loggedUser?.email,
+      roleLabel: this.roleLabel
+    };
   }
 
   get displayName(): string {

@@ -1,32 +1,15 @@
 <div class="admin-shell">
 
-  <aside class="admin-sidebar">
-    <div class="brand-box">
-      <div class="brand-logo">AI</div>
-
-      <div>
-        <h2>Insyte</h2>
-        <span>Admin Console</span>
-      </div>
-    </div>
-
-    <nav class="side-menu">
-      <button
-        type="button"
-        *ngFor="let item of getVisibleMenuItems()"
-        [class.active]="activeSection === item.key"
-        (click)="setActiveSection(item.key)"
-      >
-        <span>{{ item.icon }}</span>
-        {{ item.label }}
-      </button>
-    </nav>
-
-    <div class="sidebar-footer">
-      <strong>{{ displayName }}</strong>
-      <span>{{ roleLabel }}</span>
-    </div>
-  </aside>
+  <app-dashboard-sidebar
+    title="Insyte"
+    subtitle="Admin Console"
+    logoText="AI"
+    theme="admin"
+    [menuItems]="getVisibleMenuItems()"
+    [activeSection]="activeSection"
+    [userInfo]="sidebarUserInfo"
+    (sectionChange)="setActiveSection($event)"
+  ></app-dashboard-sidebar>
 
   <main class="admin-main">
 

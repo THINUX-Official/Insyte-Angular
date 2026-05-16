@@ -7,8 +7,9 @@ import {EChartsCoreOption} from 'echarts/core';
 import {DashboardService} from '../../../../core/services/dashboard.service';
 import {AuthService} from '../../../../core/services/auth.service';
 import {AppPermission, AppPermissions} from '../../../../core/permissions/app-permissions';
-import {DashboardSummaryCard} from '../../../../shared/components/models/dashboard-ui.model';
+import {DashboardSummaryCard, DashboardUserInfo} from '../../../../shared/components/models/dashboard-ui.model';
 import {SummaryCard} from '../../../../shared/components/dashboard/summary-card/summary-card';
+import {DashboardSidebar} from '../../../../shared/components/dashboard/dashboard-sidebar/dashboard-sidebar';
 
 interface LoggedUser {
   id?: number;
@@ -36,7 +37,7 @@ interface MenuItem {
 @Component({
   selector: 'app-ic-dashboard',
   standalone: true,
-  imports: [CommonModule, NgxEchartsDirective, SummaryCard],
+  imports: [CommonModule, NgxEchartsDirective, SummaryCard, DashboardSidebar],
   templateUrl: './ic-dashboard.html',
   styleUrls: ['./ic-dashboard.scss'],
 })
@@ -98,6 +99,15 @@ export class IcDashboard implements OnInit {
     private dashboardService: DashboardService,
     private authService: AuthService
   ) {
+  }
+
+  get sidebarUserInfo(): DashboardUserInfo {
+    return {
+      username: this.loggedUser?.username || 'agent',
+      displayName: this.displayName,
+      email: this.loggedUser?.email,
+      roleLabel: this.roleLabel
+    };
   }
 
   get displayName(): string {

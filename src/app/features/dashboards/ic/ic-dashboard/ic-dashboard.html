@@ -1,32 +1,15 @@
 <div class="ic-shell">
 
-  <aside class="ic-sidebar">
-    <div class="brand-box">
-      <div class="brand-logo">IC</div>
-
-      <div>
-        <h2>Insyte</h2>
-        <span>Agent Console</span>
-      </div>
-    </div>
-
-    <nav class="side-menu">
-      <button
-        type="button"
-        *ngFor="let item of getVisibleMenuItems()"
-        [class.active]="activeSection === item.key"
-        (click)="setActiveSection(item.key)"
-      >
-        <span>{{ item.icon }}</span>
-        {{ item.label }}
-      </button>
-    </nav>
-
-    <div class="sidebar-footer">
-      <strong>{{ displayName }}</strong>
-      <span>{{ roleLabel }}</span>
-    </div>
-  </aside>
+  <app-dashboard-sidebar
+    title="Insyte"
+    subtitle="Agent Console"
+    logoText="IC"
+    theme="agent"
+    [menuItems]="getVisibleMenuItems()"
+    [activeSection]="activeSection"
+    [userInfo]="sidebarUserInfo"
+    (sectionChange)="setActiveSection($event)"
+  ></app-dashboard-sidebar>
 
   <main class="ic-main">
 
