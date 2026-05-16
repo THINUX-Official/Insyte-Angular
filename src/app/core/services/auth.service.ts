@@ -1,14 +1,16 @@
 import {inject, Injectable} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
-import {environment} from "../../../environments/environment";
-import {LoginRequest, LoginResponse} from "../models/auth/auth-module";
-import {Observable} from "rxjs";
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+
+import {environment} from '../../../environments/environment';
+import {LoginRequest, LoginResponse} from '../models/auth/auth-module';
+import {AppPermission} from '../permissions/app-permissions';
+import {RolePermissions} from '../permissions/role-permissions';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-
   private http = inject(HttpClient);
   private apiUrl = environment.apiBaseUrl;
 
@@ -19,7 +21,7 @@ export class AuthService {
   storeSession(response: LoginResponse): void {
     localStorage.setItem('token', response.token);
     localStorage.setItem('user', JSON.stringify(response.user));
-    localStorage.setItem('roles', JSON.stringify(response.roles));
+    localStorage.setItem('roles', JSON.stringify(response.roles || []));
   }
 
   logout(): void {
@@ -32,9 +34,53 @@ export class AuthService {
     return !!localStorage.getItem('token');
   }
 
+  getCurrentUser(): any | null {
+    const user = localStorage.getItem('user');
+
+    if (!user) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(user);
+    } catch {
+      return null;
+    }
+  }
+
   getRoles(): string[] {
     const roles = localStorage.getItem('roles');
-    return roles ? JSON.parse(roles) : [];
+
+    if (!roles) {
+      return [];
+    }
+
+    try {
+      return JSON.parse(roles);
+    } catch {
+      return [];
+    }
+  }
+
+  hasRole(role: string): boolean {
+    return this.getRoles().includes(role);
+  }
+
+  hasAnyRole(roles: string[]): boolean {
+    return roles.some(role => this.hasRole(role));
+  }
+
+  hasPermission(permission: AppPermission): boolean {
+    const roles = this.getRoles();
+
+    return roles.some(role => {
+      const permissions = RolePermissions[role] || [];
+      return permissions.includes(permission);
+    });
+  }
+
+  hasAnyPermission(permissions: AppPermission[]): boolean {
+    return permissions.some(permission => this.hasPermission(permission));
   }
 
   getDashboardRoute(roles: string[]): string {

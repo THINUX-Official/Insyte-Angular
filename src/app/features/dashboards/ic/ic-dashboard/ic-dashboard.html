@@ -1,1 +1,278 @@
-<p>ic-dashboard works!</p>
+<div class="ic-shell">
+
+  <aside class="ic-sidebar">
+    <div class="brand-box">
+      <div class="brand-logo">IC</div>
+
+      <div>
+        <h2>Insyte</h2>
+        <span>Agent Console</span>
+      </div>
+    </div>
+
+    <nav class="side-menu">
+      <button
+        type="button"
+        *ngFor="let item of getVisibleMenuItems()"
+        [class.active]="activeSection === item.key"
+        (click)="setActiveSection(item.key)"
+      >
+        <span>{{ item.icon }}</span>
+        {{ item.label }}
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <strong>{{ displayName }}</strong>
+      <span>{{ roleLabel }}</span>
+    </div>
+  </aside>
+
+  <main class="ic-main">
+
+    <header class="ic-topbar">
+      <div>
+        <p class="page-label">Insurance Consultant Dashboard</p>
+        <h1>Welcome back, {{ displayName }}</h1>
+        <span>{{ loggedUser?.email || 'agent email not available' }}</span>
+      </div>
+
+      <div class="topbar-actions">
+        <button type="button" class="logout-btn" (click)="logout()">
+          Logout
+        </button>
+      </div>
+    </header>
+
+    <div class="message error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <div class="loader-card" *ngIf="isLoading">
+      Loading IC dashboard data...
+    </div>
+
+    <ng-container *ngIf="!isLoading">
+
+      <!-- OVERVIEW -->
+      <section *ngIf="activeSection === 'overview'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>My Overview</h2>
+          <p>Your leads, monthly performance, prediction and recommendations summary.</p>
+        </div>
+
+        <section class="summary-grid">
+          <article
+            class="summary-card"
+            *ngFor="let card of summaryCards"
+            [ngClass]="card.tone"
+          >
+            <div class="summary-icon">{{ card.icon }}</div>
+
+            <div>
+              <h3>{{ card.value }}</h3>
+              <p>{{ card.title }}</p>
+            </div>
+          </article>
+        </section>
+
+        <section class="mini-grid">
+          <article>
+            <span>Cancelled Leads</span>
+            <strong>{{ getCancelledLeadCount() }}</strong>
+          </article>
+
+          <article>
+            <span>Latest Score</span>
+            <strong>{{ getLatestPerformanceScore() | number:'1.2-2' }}</strong>
+          </article>
+
+          <article>
+            <span>Prediction Risk</span>
+            <strong>{{ getLatestPrediction()?.riskLevel || '-' }}</strong>
+          </article>
+
+          <article>
+            <span>Prediction Label</span>
+            <strong>{{ getLatestPrediction()?.predictionLabel || '-' }}</strong>
+          </article>
+        </section>
+
+        <section class="chart-grid two">
+          <article class="panel chart-panel">
+            <div echarts [options]="leadStatusChartOption" class="chart"></div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div echarts [options]="predictionChartOption" class="chart"></div>
+          </article>
+        </section>
+
+      </section>
+
+      <!-- LEADS -->
+      <section *ngIf="activeSection === 'leads'" class="dashboard-section">
+        <div class="section-title">
+          <h2>My Leads</h2>
+          <p>Create and update your own leads. Delete access is restricted to administrators.</p>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <div>
+              <h2>Lead Records</h2>
+              <p>Leads assigned to you.</p>
+            </div>
+
+            <button
+              class="action-btn"
+              *ngIf="can(permissions.LEAD_CREATE)"
+            >
+              + Add Lead
+            </button>
+          </div>
+
+          <div class="empty-state" *ngIf="myLeads.length === 0">
+            No leads found for your account.
+          </div>
+
+          <div class="table-wrap" *ngIf="myLeads.length > 0">
+            <table>
+              <thead>
+              <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Mobile</th>
+                <th>Status</th>
+                <th>Premium</th>
+                <th>Actions</th>
+              </tr>
+              </thead>
+
+              <tbody>
+              <tr *ngFor="let lead of myLeads.slice(0, 50)">
+                <td>{{ lead.id }}</td>
+                <td>{{ getLeadCustomerName(lead) }}</td>
+                <td>{{ getLeadMobile(lead) }}</td>
+                <td>
+                  <span class="status-pill">{{ lead.status || '-' }}</span>
+                </td>
+                <td>{{ getLeadPremium(lead) }}</td>
+                <td>
+                  <button
+                    class="small-btn"
+                    *ngIf="can(permissions.LEAD_VIEW)"
+                  >
+                    View
+                  </button>
+
+                  <button
+                    class="small-btn"
+                    *ngIf="can(permissions.LEAD_UPDATE)"
+                  >
+                    Edit
+                  </button>
+
+                  <!-- IC cannot see this because IC does not have LEAD_DELETE permission -->
+                  <button
+                    class="small-btn danger"
+                    *ngIf="can(permissions.LEAD_DELETE)"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- PERFORMANCE -->
+      <section *ngIf="activeSection === 'performance'" class="dashboard-section">
+        <div class="section-title">
+          <h2>My Performance</h2>
+          <p>Monthly performance score, target achievement and AI prediction.</p>
+        </div>
+
+        <section class="chart-grid two">
+          <article class="panel chart-panel">
+            <div echarts [options]="performanceChartOption" class="chart"></div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div echarts [options]="predictionChartOption" class="chart"></div>
+          </article>
+        </section>
+
+        <div class="panel">
+          <div class="panel-title">
+            <div>
+              <h2>Performance History</h2>
+              <p>Your monthly performance records.</p>
+            </div>
+          </div>
+
+          <div class="empty-state" *ngIf="myPerformance.length === 0">
+            No performance records found for your account.
+          </div>
+
+          <div class="table-wrap" *ngIf="myPerformance.length > 0">
+            <table>
+              <thead>
+              <tr>
+                <th>Month</th>
+                <th>Total Leads</th>
+                <th>Converted</th>
+                <th>Total Premium</th>
+                <th>Conversion Rate</th>
+                <th>Score</th>
+              </tr>
+              </thead>
+
+              <tbody>
+              <tr *ngFor="let item of myPerformance">
+                <td>{{ item.performanceYear }}-{{ item.performanceMonth }}</td>
+                <td>{{ item.totalLeads }}</td>
+                <td>{{ item.convertedLeads }}</td>
+                <td>{{ item.totalPremium | number:'1.2-2' }}</td>
+                <td>{{ item.conversionRate | number:'1.2-2' }}%</td>
+                <td>
+                  <span class="score-pill">
+                    {{ item.performanceScore | number:'1.2-2' }}
+                  </span>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- RECOMMENDATIONS -->
+      <section *ngIf="activeSection === 'recommendations'" class="dashboard-section">
+        <div class="section-title">
+          <h2>My Recommendations</h2>
+          <p>AI-generated suggestions to improve lead follow-up and performance.</p>
+        </div>
+
+        <div class="panel">
+          <div class="empty-state" *ngIf="myRecommendations.length === 0">
+            No recommendations found for your account.
+          </div>
+
+          <div class="stack-list" *ngIf="myRecommendations.length > 0">
+            <div class="recommendation-item" *ngFor="let item of myRecommendations">
+              <strong>{{ item.title }}</strong>
+              <span>{{ item.priority }} • {{ item.recommendationType }}</span>
+              <p>{{ item.recommendationText }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </ng-container>
+
+  </main>
+</div>

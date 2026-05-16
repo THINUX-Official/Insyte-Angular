@@ -6,6 +6,7 @@ import {EChartsCoreOption} from 'echarts/core';
 
 import {DashboardService} from '../../../../core/services/dashboard.service';
 import {AuthService} from '../../../../core/services/auth.service';
+import {AppPermission, AppPermissions} from '../../../../core/permissions/app-permissions';
 
 interface LoggedUser {
   id?: number;
@@ -22,6 +23,22 @@ interface SummaryCard {
   tone: 'blue' | 'green' | 'orange' | 'red' | 'purple' | 'dark';
 }
 
+type AdminSection =
+  | 'overview'
+  | 'users'
+  | 'leads'
+  | 'ai'
+  | 'fraud'
+  | 'recommendations'
+  | 'experiments';
+
+interface MenuItem {
+  key: AdminSection;
+  label: string;
+  icon: string;
+  permission: AppPermission;
+}
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
@@ -30,58 +47,17 @@ interface SummaryCard {
   styleUrls: ['./admin-dashboard.scss'],
 })
 export class AdminDashboard implements OnInit {
+  readonly permissions = AppPermissions;
 
-  activeSection:
-    | 'overview'
-    | 'users'
-    | 'leads'
-    | 'ai'
-    | 'fraud'
-    | 'recommendations'
-    | 'experiments' = 'overview';
+  activeSection: AdminSection = 'overview';
 
-  menuItems = [
-    {
-      key: 'overview',
-      label: 'Dashboard Overview',
-      icon: '📊'
-    },
-    {
-      key: 'users',
-      label: 'User Management',
-      icon: '👥'
-    },
-    {
-      key: 'leads',
-      label: 'Lead Management',
-      icon: '📋'
-    },
-    {
-      key: 'ai',
-      label: 'AI Analytics',
-      icon: '🤖'
-    },
-    {
-      key: 'fraud',
-      label: 'Fraud & Risk',
-      icon: '🚨'
-    },
-    {
-      key: 'recommendations',
-      label: 'Recommendations',
-      icon: '💡'
-    },
-    {
-      key: 'experiments',
-      label: 'ML Experiments',
-      icon: '🧪'
-    }
-  ];
   loggedUser: LoggedUser | null = null;
+
   isLoading = false;
   isPipelineRunning = false;
   errorMessage = '';
   pipelineMessage = '';
+
   users: any[] = [];
   leads: any[] = [];
   performanceRecords: any[] = [];
@@ -89,12 +65,59 @@ export class AdminDashboard implements OnInit {
   fraudAlerts: any[] = [];
   recommendations: any[] = [];
   mlExperiments: any[] = [];
+
   roleChartOption: EChartsCoreOption = {};
   leadStatusChartOption: EChartsCoreOption = {};
   performanceChartOption: EChartsCoreOption = {};
   predictionChartOption: EChartsCoreOption = {};
   alertChartOption: EChartsCoreOption = {};
+
   summaryCards: SummaryCard[] = [];
+
+  menuItems: MenuItem[] = [
+    {
+      key: 'overview',
+      label: 'Dashboard Overview',
+      icon: '📊',
+      permission: AppPermissions.DASHBOARD_ADMIN_VIEW
+    },
+    {
+      key: 'users',
+      label: 'User Management',
+      icon: '👥',
+      permission: AppPermissions.USER_VIEW
+    },
+    {
+      key: 'leads',
+      label: 'Lead Management',
+      icon: '📋',
+      permission: AppPermissions.LEAD_VIEW
+    },
+    {
+      key: 'ai',
+      label: 'AI Analytics',
+      icon: '🤖',
+      permission: AppPermissions.AI_ANALYTICS_VIEW
+    },
+    {
+      key: 'fraud',
+      label: 'Fraud & Risk',
+      icon: '🚨',
+      permission: AppPermissions.FRAUD_VIEW
+    },
+    {
+      key: 'recommendations',
+      label: 'Recommendations',
+      icon: '💡',
+      permission: AppPermissions.RECOMMENDATION_VIEW
+    },
+    {
+      key: 'experiments',
+      label: 'ML Experiments',
+      icon: '🧪',
+      permission: AppPermissions.ML_EXPERIMENT_VIEW
+    }
+  ];
 
   constructor(
     private dashboardService: DashboardService,
@@ -103,20 +126,33 @@ export class AdminDashboard implements OnInit {
   }
 
   get displayName(): string {
-    return this.loggedUser?.nickname || this.loggedUser?.username || 'Administrator';
+    return this.loggedUser?.nickname || this.loggedUser?.username || 'User';
   }
 
   get roleLabel(): string {
-    return this.loggedUser?.roles?.join(', ') || 'ADMIN';
-  }
-
-  setActiveSection(section: any): void {
-    this.activeSection = section;
+    return this.loggedUser?.roles?.join(', ') || '-';
   }
 
   ngOnInit(): void {
     this.loadLoggedUser();
+    this.setDefaultSectionByPermission();
     this.loadDashboardData();
+  }
+
+  can(permission: AppPermission): boolean {
+    return this.authService.hasPermission(permission);
+  }
+
+  getVisibleMenuItems(): MenuItem[] {
+    return this.menuItems.filter(item => this.can(item.permission));
+  }
+
+  setActiveSection(section: AdminSection): void {
+    const selectedItem = this.menuItems.find(item => item.key === section);
+
+    if (selectedItem && this.can(selectedItem.permission)) {
+      this.activeSection = section;
+    }
   }
 
   loadDashboardData(): void {
@@ -156,6 +192,11 @@ export class AdminDashboard implements OnInit {
   }
 
   runAiPipeline(): void {
+    if (!this.can(this.permissions.AI_PIPELINE_RUN)) {
+      this.errorMessage = 'You do not have permission to run the AI pipeline.';
+      return;
+    }
+
     this.isPipelineRunning = true;
     this.pipelineMessage = '';
     this.errorMessage = '';
@@ -247,19 +288,17 @@ export class AdminDashboard implements OnInit {
     window.location.href = '/';
   }
 
-  private loadLoggedUser(): void {
-    const storedUser = localStorage.getItem('user');
-    const storedRoles = localStorage.getItem('roles');
+  private setDefaultSectionByPermission(): void {
+    const firstVisibleItem = this.getVisibleMenuItems()[0];
 
-    let roles: string[] = [];
-
-    if (storedRoles) {
-      try {
-        roles = JSON.parse(storedRoles);
-      } catch {
-        roles = [];
-      }
+    if (firstVisibleItem) {
+      this.activeSection = firstVisibleItem.key;
     }
+  }
+
+  private loadLoggedUser(): void {
+    const storedUser = this.authService.getCurrentUser();
+    const roles = this.authService.getRoles();
 
     if (!storedUser) {
       this.loggedUser = {
@@ -271,21 +310,10 @@ export class AdminDashboard implements OnInit {
       return;
     }
 
-    try {
-      const parsedUser = JSON.parse(storedUser);
-
-      this.loggedUser = {
-        ...parsedUser,
-        roles: parsedUser.roles || roles
-      };
-    } catch {
-      this.loggedUser = {
-        username: 'admin',
-        nickname: 'Administrator',
-        email: 'admin@gmail.com',
-        roles: roles.length ? roles : ['ADMIN']
-      };
-    }
+    this.loggedUser = {
+      ...storedUser,
+      roles: storedUser.roles || roles
+    };
   }
 
   private updateSummaryCards(): void {

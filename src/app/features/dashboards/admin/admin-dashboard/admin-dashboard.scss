@@ -764,4 +764,11 @@ td span {
   .topbar-actions {
     width: 100%;
   }
+
+  .inline-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
 }
