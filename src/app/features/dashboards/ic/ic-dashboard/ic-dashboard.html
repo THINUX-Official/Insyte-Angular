@@ -72,13 +72,21 @@
         </section>
 
         <section class="chart-grid two">
-          <article class="panel chart-panel">
-            <div echarts [options]="leadStatusChartOption" class="chart"></div>
-          </article>
+          <app-chart-panel
+            [chartOptions]="leadStatusChartOption"
+            title="My Lead Status"
+            subtitle="Status distribution of your leads"
+            [hasData]="myLeads.length > 0"
+            emptyMessage="No leads assigned to you."
+          ></app-chart-panel>
 
-          <article class="panel chart-panel">
-            <div echarts [options]="predictionChartOption" class="chart"></div>
-          </article>
+          <app-chart-panel
+            [chartOptions]="predictionChartOption"
+            title="Next Month Prediction"
+            subtitle="Current score vs predicted score"
+            [hasData]="myPredictions.length > 0 || myPerformance.length > 0"
+            emptyMessage="No prediction data available."
+          ></app-chart-panel>
         </section>
 
       </section>
@@ -169,13 +177,21 @@
         </div>
 
         <section class="chart-grid two">
-          <article class="panel chart-panel">
-            <div echarts [options]="performanceChartOption" class="chart"></div>
-          </article>
+          <app-chart-panel
+            [chartOptions]="performanceChartOption"
+            title="My Performance Trend"
+            subtitle="Monthly performance score history"
+            [hasData]="myPerformance.length > 0"
+            emptyMessage="No performance records found."
+          ></app-chart-panel>
 
-          <article class="panel chart-panel">
-            <div echarts [options]="predictionChartOption" class="chart"></div>
-          </article>
+          <app-chart-panel
+            [chartOptions]="predictionChartOption"
+            title="Next Month Prediction"
+            subtitle="AI predicted performance score"
+            [hasData]="myPredictions.length > 0 || myPerformance.length > 0"
+            emptyMessage="No prediction data available."
+          ></app-chart-panel>
         </section>
 
         <div class="panel">

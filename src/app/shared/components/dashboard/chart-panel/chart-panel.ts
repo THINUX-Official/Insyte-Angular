@@ -1,11 +1,21 @@
-import { Component } from '@angular/core';
+import {Component, Input} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {NgxEchartsDirective} from 'ngx-echarts';
+import {EChartsCoreOption} from 'echarts/core';
 
 @Component({
   selector: 'app-chart-panel',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule, NgxEchartsDirective],
   templateUrl: './chart-panel.html',
-  styleUrl: './chart-panel.scss',
+  styleUrls: ['./chart-panel.scss']
 })
 export class ChartPanel {
+  @Input({required: true}) chartOptions: EChartsCoreOption = {};
 
+  @Input() title = '';
+  @Input() subtitle = '';
+  @Input() height = '315px';
+  @Input() emptyMessage = 'No chart data available.';
+  @Input() hasData = true;
 }

@@ -79,13 +79,21 @@
         </section>
 
         <section class="chart-grid two">
-          <article class="panel chart-panel">
-            <div echarts [options]="leadStatusChartOption" class="chart"></div>
-          </article>
+          <app-chart-panel
+            [chartOptions]="leadStatusChartOption"
+            title="Lead Status Distribution"
+            subtitle="Current lead status overview"
+            [hasData]="leads.length > 0"
+            emptyMessage="No lead data available."
+          ></app-chart-panel>
 
-          <article class="panel chart-panel">
-            <div echarts [options]="predictionChartOption" class="chart"></div>
-          </article>
+          <app-chart-panel
+            [chartOptions]="predictionChartOption"
+            title="AI Prediction Risk"
+            subtitle="Prediction risk level summary"
+            [hasData]="aiPredictions.length > 0"
+            emptyMessage="No prediction data available."
+          ></app-chart-panel>
         </section>
 
       </section>
@@ -235,13 +243,21 @@
         </div>
 
         <section class="chart-grid two">
-          <article class="panel chart-panel">
-            <div echarts [options]="performanceChartOption" class="chart"></div>
-          </article>
+          <app-chart-panel
+            [chartOptions]="performanceChartOption"
+            title="Top Agent Performance"
+            subtitle="Performance score comparison"
+            [hasData]="performanceRecords.length > 0"
+            emptyMessage="No performance data available."
+          ></app-chart-panel>
 
-          <article class="panel chart-panel">
-            <div echarts [options]="predictionChartOption" class="chart"></div>
-          </article>
+          <app-chart-panel
+            [chartOptions]="predictionChartOption"
+            title="AI Prediction Risk"
+            subtitle="Risk level distribution"
+            [hasData]="aiPredictions.length > 0"
+            emptyMessage="No prediction data available."
+          ></app-chart-panel>
         </section>
 
         <div class="panel">

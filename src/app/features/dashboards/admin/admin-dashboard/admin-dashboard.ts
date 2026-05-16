@@ -11,6 +11,7 @@ import {SummaryCard} from '../../../../shared/components/dashboard/summary-card/
 import {DashboardSummaryCard, DashboardUserInfo} from '../../../../shared/components/models/dashboard-ui.model';
 import {DashboardSidebar} from '../../../../shared/components/dashboard/dashboard-sidebar/dashboard-sidebar';
 import {DashboardTopbar} from '../../../../shared/components/dashboard/dashboard-topbar/dashboard-topbar';
+import {ChartPanel} from '../../../../shared/components/dashboard/chart-panel/chart-panel';
 
 interface LoggedUser {
   id?: number;
@@ -39,7 +40,7 @@ interface MenuItem {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, NgxEchartsDirective, SummaryCard, DashboardSidebar, DashboardTopbar],
+  imports: [CommonModule, NgxEchartsDirective, SummaryCard, DashboardSidebar, DashboardTopbar, ChartPanel],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
 })

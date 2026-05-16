@@ -1,7 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {forkJoin} from 'rxjs';
-import {NgxEchartsDirective} from 'ngx-echarts';
 import {EChartsCoreOption} from 'echarts/core';
 
 import {DashboardService} from '../../../../core/services/dashboard.service';
@@ -11,6 +10,7 @@ import {DashboardSummaryCard, DashboardUserInfo} from '../../../../shared/compon
 import {SummaryCard} from '../../../../shared/components/dashboard/summary-card/summary-card';
 import {DashboardSidebar} from '../../../../shared/components/dashboard/dashboard-sidebar/dashboard-sidebar';
 import {DashboardTopbar} from '../../../../shared/components/dashboard/dashboard-topbar/dashboard-topbar';
+import {ChartPanel} from '../../../../shared/components/dashboard/chart-panel/chart-panel';
 
 interface LoggedUser {
   id?: number;
@@ -38,7 +38,7 @@ interface MenuItem {
 @Component({
   selector: 'app-ic-dashboard',
   standalone: true,
-  imports: [CommonModule, NgxEchartsDirective, SummaryCard, DashboardSidebar, DashboardTopbar],
+  imports: [CommonModule, SummaryCard, DashboardSidebar, DashboardTopbar, ChartPanel],
   templateUrl: './ic-dashboard.html',
   styleUrls: ['./ic-dashboard.scss'],
 })
