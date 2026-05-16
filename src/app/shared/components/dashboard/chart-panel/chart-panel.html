@@ -16,8 +16,10 @@
   </ng-container>
 
   <ng-template #emptyChart>
-    <div class="empty-chart">
-      {{ emptyMessage }}
-    </div>
+    <app-empty-state
+      icon="📊"
+      title="No chart data"
+      [message]="emptyMessage"
+    ></app-empty-state>
   </ng-template>
 </article>

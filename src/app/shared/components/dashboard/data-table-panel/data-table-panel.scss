@@ -1,0 +1,136 @@
+.table-panel {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.07);
+}
+
+.panel-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.panel-title h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 950;
+}
+
+.panel-title p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  padding: 13px 12px;
+  text-align: left;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+
+td {
+  padding: 15px 12px;
+  border-top: 1px solid #e2e8f0;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 750;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 7px 11px;
+  border-radius: 999px;
+  font-weight: 950;
+  font-size: 12px;
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.badge.success {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.badge.warning {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.badge.danger {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.badge.default {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.small-btn {
+  min-height: 34px;
+  border: 0;
+  border-radius: 11px;
+  padding: 0 12px;
+  margin-right: 6px;
+  background: #eff6ff;
+  color: #0d6efd;
+  font-size: 12px;
+  font-weight: 950;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.small-btn:hover {
+  transform: translateY(-1px);
+}
+
+.small-btn.primary {
+  background: #eff6ff;
+  color: #0d6efd;
+}
+
+.small-btn.danger {
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.small-btn.warning {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.small-btn.success {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.table-footer {
+  margin-top: 16px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 800;
+}

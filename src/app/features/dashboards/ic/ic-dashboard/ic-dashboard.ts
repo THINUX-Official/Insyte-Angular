@@ -6,11 +6,17 @@ import {EChartsCoreOption} from 'echarts/core';
 import {DashboardService} from '../../../../core/services/dashboard.service';
 import {AuthService} from '../../../../core/services/auth.service';
 import {AppPermission, AppPermissions} from '../../../../core/permissions/app-permissions';
-import {DashboardSummaryCard, DashboardUserInfo} from '../../../../shared/components/models/dashboard-ui.model';
+import {
+  DashboardSummaryCard,
+  DashboardTableAction,
+  DashboardTableColumn,
+  DashboardUserInfo
+} from '../../../../shared/components/models/dashboard-ui.model';
 import {SummaryCard} from '../../../../shared/components/dashboard/summary-card/summary-card';
 import {DashboardSidebar} from '../../../../shared/components/dashboard/dashboard-sidebar/dashboard-sidebar';
 import {DashboardTopbar} from '../../../../shared/components/dashboard/dashboard-topbar/dashboard-topbar';
 import {ChartPanel} from '../../../../shared/components/dashboard/chart-panel/chart-panel';
+import {DataTablePanel} from '../../../../shared/components/dashboard/data-table-panel/data-table-panel';
 
 interface LoggedUser {
   id?: number;
@@ -38,7 +44,7 @@ interface MenuItem {
 @Component({
   selector: 'app-ic-dashboard',
   standalone: true,
-  imports: [CommonModule, SummaryCard, DashboardSidebar, DashboardTopbar, ChartPanel],
+  imports: [CommonModule, SummaryCard, DashboardSidebar, DashboardTopbar, ChartPanel, DataTablePanel],
   templateUrl: './ic-dashboard.html',
   styleUrls: ['./ic-dashboard.scss'],
 })
@@ -109,6 +115,61 @@ export class IcDashboard implements OnInit {
       email: this.loggedUser?.email,
       roleLabel: this.roleLabel
     };
+  }
+
+  leadColumns: DashboardTableColumn[] = [
+    {key: 'id', label: 'ID'},
+    {key: 'customerName', label: 'Customer'},
+    {key: 'mobile', label: 'Mobile'},
+    {key: 'status', label: 'Status', type: 'badge'},
+    {key: 'expectedPremium', label: 'Premium', type: 'number'}
+  ];
+
+  performanceColumns: DashboardTableColumn[] = [
+    {key: 'performanceYear', label: 'Year', type: 'number'},
+    {key: 'performanceMonth', label: 'Month', type: 'number'},
+    {key: 'totalLeads', label: 'Leads', type: 'number'},
+    {key: 'convertedLeads', label: 'Converted', type: 'number'},
+    {key: 'totalPremium', label: 'Premium', type: 'number'},
+    {key: 'conversionRate', label: 'Conversion %', type: 'number'},
+    {key: 'performanceScore', label: 'Score', type: 'number'}
+  ];
+
+  getLeadActions(): DashboardTableAction[] {
+    const actions: DashboardTableAction[] = [];
+
+    if (this.can(this.permissions.LEAD_VIEW)) {
+      actions.push({
+        label: 'View',
+        icon: '👁️',
+        tone: 'primary',
+        action: 'view'
+      });
+    }
+
+    if (this.can(this.permissions.LEAD_UPDATE)) {
+      actions.push({
+        label: 'Edit',
+        icon: '✏️',
+        tone: 'primary',
+        action: 'edit'
+      });
+    }
+
+    if (this.can(this.permissions.LEAD_DELETE)) {
+      actions.push({
+        label: 'Delete',
+        icon: '🗑️',
+        tone: 'danger',
+        action: 'delete'
+      });
+    }
+
+    return actions;
+  }
+
+  onLeadAction(event: { action: string; row: any }): void {
+    console.log('IC Lead action:', event.action, event.row);
   }
 
   get displayName(): string {

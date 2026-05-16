@@ -26,3 +26,17 @@ export interface DashboardUserInfo {
   email?: string;
   roleLabel: string;
 }
+
+export interface DashboardTableColumn {
+  key: string;
+  label: string;
+  type?: 'text' | 'number' | 'currency' | 'badge';
+}
+
+export interface DashboardTableAction {
+  label: string;
+  icon?: string;
+  tone?: 'primary' | 'danger' | 'warning' | 'success';
+  permission?: string;
+  action: string;
+}

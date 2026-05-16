@@ -113,59 +113,14 @@
             </button>
           </div>
 
-          <div class="empty-state" *ngIf="myLeads.length === 0">
-            No leads found for your account.
-          </div>
-
-          <div class="table-wrap" *ngIf="myLeads.length > 0">
-            <table>
-              <thead>
-              <tr>
-                <th>ID</th>
-                <th>Customer</th>
-                <th>Mobile</th>
-                <th>Status</th>
-                <th>Premium</th>
-                <th>Actions</th>
-              </tr>
-              </thead>
-
-              <tbody>
-              <tr *ngFor="let lead of myLeads.slice(0, 50)">
-                <td>{{ lead.id }}</td>
-                <td>{{ getLeadCustomerName(lead) }}</td>
-                <td>{{ getLeadMobile(lead) }}</td>
-                <td>
-                  <span class="status-pill">{{ lead.status || '-' }}</span>
-                </td>
-                <td>{{ getLeadPremium(lead) }}</td>
-                <td>
-                  <button
-                    class="small-btn"
-                    *ngIf="can(permissions.LEAD_VIEW)"
-                  >
-                    View
-                  </button>
-
-                  <button
-                    class="small-btn"
-                    *ngIf="can(permissions.LEAD_UPDATE)"
-                  >
-                    Edit
-                  </button>
-
-                  <!-- IC cannot see this because IC does not have LEAD_DELETE permission -->
-                  <button
-                    class="small-btn danger"
-                    *ngIf="can(permissions.LEAD_DELETE)"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
+          <app-data-table-panel
+            [columns]="leadColumns"
+            [rows]="myLeads"
+            [actions]="getLeadActions()"
+            [pageSize]="50"
+            emptyMessage="No leads found for your account."
+            (actionClick)="onLeadAction($event)"
+          ></app-data-table-panel>
         </div>
       </section>
 
@@ -194,48 +149,13 @@
           ></app-chart-panel>
         </section>
 
-        <div class="panel">
-          <div class="panel-title">
-            <div>
-              <h2>Performance History</h2>
-              <p>Your monthly performance records.</p>
-            </div>
-          </div>
-
-          <div class="empty-state" *ngIf="myPerformance.length === 0">
-            No performance records found for your account.
-          </div>
-
-          <div class="table-wrap" *ngIf="myPerformance.length > 0">
-            <table>
-              <thead>
-              <tr>
-                <th>Month</th>
-                <th>Total Leads</th>
-                <th>Converted</th>
-                <th>Total Premium</th>
-                <th>Conversion Rate</th>
-                <th>Score</th>
-              </tr>
-              </thead>
-
-              <tbody>
-              <tr *ngFor="let item of myPerformance">
-                <td>{{ item.performanceYear }}-{{ item.performanceMonth }}</td>
-                <td>{{ item.totalLeads }}</td>
-                <td>{{ item.convertedLeads }}</td>
-                <td>{{ item.totalPremium | number:'1.2-2' }}</td>
-                <td>{{ item.conversionRate | number:'1.2-2' }}%</td>
-                <td>
-                  <span class="score-pill">
-                    {{ item.performanceScore | number:'1.2-2' }}
-                  </span>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <app-data-table-panel
+          title="Performance History"
+          subtitle="Your monthly performance records."
+          [columns]="performanceColumns"
+          [rows]="myPerformance"
+          emptyMessage="No performance records found for your account."
+        ></app-data-table-panel>
       </section>
 
       <!-- RECOMMENDATIONS -->
@@ -245,19 +165,14 @@
           <p>AI-generated suggestions to improve lead follow-up and performance.</p>
         </div>
 
-        <div class="panel">
-          <div class="empty-state" *ngIf="myRecommendations.length === 0">
-            No recommendations found for your account.
-          </div>
-
-          <div class="stack-list" *ngIf="myRecommendations.length > 0">
-            <div class="recommendation-item" *ngFor="let item of myRecommendations">
-              <strong>{{ item.title }}</strong>
-              <span>{{ item.priority }} • {{ item.recommendationType }}</span>
-              <p>{{ item.recommendationText }}</p>
-            </div>
-          </div>
-        </div>
+        <app-data-table-panel
+          [columns]="leadColumns"
+          [rows]="myLeads"
+          [actions]="getLeadActions()"
+          [pageSize]="50"
+          emptyMessage="No recommendations found for your account."
+          (actionClick)="onLeadAction($event)"
+        ></app-data-table-panel>
       </section>
 
     </ng-container>

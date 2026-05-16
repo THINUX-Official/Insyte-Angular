@@ -2,11 +2,12 @@ import {Component, Input} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {NgxEchartsDirective} from 'ngx-echarts';
 import {EChartsCoreOption} from 'echarts/core';
+import {EmptyState} from '../empty-state/empty-state';
 
 @Component({
   selector: 'app-chart-panel',
   standalone: true,
-  imports: [CommonModule, NgxEchartsDirective],
+  imports: [CommonModule, NgxEchartsDirective, EmptyState],
   templateUrl: './chart-panel.html',
   styleUrls: ['./chart-panel.scss']
 })

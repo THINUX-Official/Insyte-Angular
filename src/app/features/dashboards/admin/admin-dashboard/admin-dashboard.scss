@@ -267,35 +267,6 @@
    TABLES
 ========================= */
 
-.table-wrap {
-  width: 100%;
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th {
-  padding: 13px 12px;
-  text-align: left;
-  color: #64748b;
-  font-size: 12px;
-  font-weight: 950;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
-
-td {
-  padding: 15px 12px;
-  border-top: 1px solid #e2e8f0;
-  color: #0f172a;
-  font-size: 14px;
-  font-weight: 750;
-  vertical-align: top;
-}
-
 td strong {
   display: block;
   font-weight: 950;
@@ -307,27 +278,6 @@ td span {
   color: #64748b;
   font-size: 12px;
   font-weight: 750;
-}
-
-.score-pill,
-.status-pill {
-  display: inline-flex;
-  align-items: center;
-  width: fit-content;
-  padding: 7px 11px;
-  border-radius: 999px;
-  font-weight: 950;
-  font-size: 12px;
-}
-
-.score-pill {
-  background: #ecfdf5;
-  color: #047857;
-}
-
-.status-pill.active {
-  background: #ecfdf5;
-  color: #047857;
 }
 
 /* =========================

@@ -1,1 +1,82 @@
-<p>data-table-panel works!</p>
+<article class="table-panel">
+
+  <div class="panel-title" *ngIf="title || subtitle">
+    <div>
+      <h2 *ngIf="title">{{ title }}</h2>
+      <p *ngIf="subtitle">{{ subtitle }}</p>
+    </div>
+  </div>
+
+  <app-empty-state
+    *ngIf="rows.length === 0"
+    icon="📭"
+    title="No records found"
+    [message]="emptyMessage"
+  ></app-empty-state>
+
+  <div class="table-wrap" *ngIf="rows.length > 0">
+    <table>
+      <thead>
+      <tr>
+        <th *ngFor="let column of columns">
+          {{ column.label }}
+        </th>
+
+        <th *ngIf="actions.length > 0">
+          Actions
+        </th>
+      </tr>
+      </thead>
+
+      <tbody>
+      <tr *ngFor="let row of visibleRows; trackBy: trackByIndex">
+
+        <td *ngFor="let column of columns">
+          <ng-container [ngSwitch]="column.type">
+
+            <span *ngSwitchCase="'currency'">
+              {{ getValue(row, column.key) === '-' ? '-' : (getValue(row, column.key) | number:'1.2-2') }}
+            </span>
+
+            <span *ngSwitchCase="'number'">
+              {{ getValue(row, column.key) === '-' ? '-' : (getValue(row, column.key) | number:'1.2-2') }}
+            </span>
+
+            <span
+              *ngSwitchCase="'badge'"
+              class="badge"
+              [ngClass]="getBadgeClass(getValue(row, column.key))"
+            >
+              {{ getValue(row, column.key) }}
+            </span>
+
+            <span *ngSwitchDefault>
+              {{ getValue(row, column.key) }}
+            </span>
+
+          </ng-container>
+        </td>
+
+        <td *ngIf="actions.length > 0">
+          <button
+            type="button"
+            class="small-btn"
+            *ngFor="let action of actions"
+            [ngClass]="action.tone || 'primary'"
+            (click)="onAction(action, row)"
+          >
+            <span *ngIf="action.icon">{{ action.icon }}</span>
+            {{ action.label }}
+          </button>
+        </td>
+
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-footer" *ngIf="rows.length > pageSize">
+    Showing {{ pageSize }} of {{ rows.length }} records
+  </div>
+
+</article>

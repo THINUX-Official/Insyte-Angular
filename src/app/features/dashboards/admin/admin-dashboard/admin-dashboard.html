@@ -120,47 +120,13 @@
             </button>
           </div>
 
-          <div class="table-wrap">
-            <table>
-              <thead>
-              <tr>
-                <th>Username</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Roles</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-              </thead>
-
-              <tbody>
-              <tr *ngFor="let user of users">
-                <td>{{ user.username }}</td>
-                <td>{{ user.nickname || '-' }}</td>
-                <td>{{ user.email || '-' }}</td>
-                <td>{{ user.roles?.join(', ') || '-' }}</td>
-                <td>
-                  <span class="status-pill active">{{ user.status || 'ACTIVE' }}</span>
-                </td>
-                <td>
-                  <button
-                    class="small-btn"
-                    *ngIf="can(permissions.USER_UPDATE)"
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    class="small-btn danger"
-                    *ngIf="can(permissions.USER_DELETE)"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
+          <app-data-table-panel
+            [columns]="userColumns"
+            [rows]="users"
+            [actions]="getUserActions()"
+            emptyMessage="No users found."
+            (actionClick)="onUserAction($event)"
+          ></app-data-table-panel>
         </div>
       </section>
 
@@ -186,52 +152,14 @@
             </button>
           </div>
 
-          <div class="table-wrap">
-            <table>
-              <thead>
-              <tr>
-                <th>ID</th>
-                <th>Customer</th>
-                <th>Mobile</th>
-                <th>Status</th>
-                <th>Premium</th>
-                <th>Actions</th>
-              </tr>
-              </thead>
-
-              <tbody>
-              <tr *ngFor="let lead of leads.slice(0, 50)">
-                <td>{{ lead.id }}</td>
-                <td>{{ lead.name || lead.customerName || '-' }}</td>
-                <td>{{ lead.mobile || lead.phone || '-' }}</td>
-                <td>{{ lead.status || '-' }}</td>
-                <td>{{ lead.premium || lead.expectedPremium || '-' }}</td>
-                <td>
-                  <button
-                    class="small-btn"
-                    *ngIf="can(permissions.LEAD_VIEW)"
-                  >
-                    View
-                  </button>
-
-                  <button
-                    class="small-btn"
-                    *ngIf="can(permissions.LEAD_UPDATE)"
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    class="small-btn danger"
-                    *ngIf="can(permissions.LEAD_DELETE)"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
+          <app-data-table-panel
+            [columns]="leadColumns"
+            [rows]="leads"
+            [actions]="getLeadActions()"
+            [pageSize]="50"
+            emptyMessage="No leads found."
+            (actionClick)="onLeadAction($event)"
+          ></app-data-table-panel>
         </div>
       </section>
 
@@ -260,43 +188,13 @@
           ></app-chart-panel>
         </section>
 
-        <div class="panel">
-          <div class="panel-title">
-            <div>
-              <h2>Top Agent Performance</h2>
-              <p>Best performing agents for May 2026.</p>
-            </div>
-          </div>
-
-          <div class="table-wrap">
-            <table>
-              <thead>
-              <tr>
-                <th>Agent</th>
-                <th>Leads</th>
-                <th>Converted</th>
-                <th>Premium</th>
-                <th>Score</th>
-              </tr>
-              </thead>
-
-              <tbody>
-              <tr *ngFor="let item of getTopPerformers()">
-                <td>
-                  <strong>{{ item.nickname || item.username }}</strong>
-                  <span>{{ item.username }}</span>
-                </td>
-                <td>{{ item.totalLeads }}</td>
-                <td>{{ item.convertedLeads }}</td>
-                <td>{{ item.totalPremium | number:'1.2-2' }}</td>
-                <td>
-                  <span class="score-pill">{{ item.performanceScore | number:'1.2-2' }}</span>
-                </td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <app-data-table-panel
+          title="Top Agent Performance"
+          subtitle="Best performing agents for May 2026."
+          [columns]="performanceColumns"
+          [rows]="getTopPerformers()"
+          emptyMessage="No performance records found."
+        ></app-data-table-panel>
       </section>
 
       <!-- FRAUD -->
@@ -364,38 +262,13 @@
           <p>Model training and AI pipeline experiment evidence.</p>
         </div>
 
-        <div class="panel">
-          <div class="table-wrap">
-            <table>
-              <thead>
-              <tr>
-                <th>Model</th>
-                <th>Type</th>
-                <th>Algorithm</th>
-                <th>Dataset</th>
-                <th>MAE</th>
-                <th>RMSE</th>
-                <th>R²</th>
-              </tr>
-              </thead>
-
-              <tbody>
-              <tr *ngFor="let item of mlExperiments">
-                <td>
-                  <strong>{{ item.modelName }}</strong>
-                  <span>{{ item.modelVersion }}</span>
-                </td>
-                <td>{{ item.modelType }}</td>
-                <td>{{ item.algorithm }}</td>
-                <td>{{ item.datasetSize }}</td>
-                <td>{{ item.mae || '-' }}</td>
-                <td>{{ item.rmse || '-' }}</td>
-                <td>{{ item.r2Score || '-' }}</td>
-              </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <app-data-table-panel
+          title="ML Experiment Records"
+          subtitle="Model training and AI pipeline experiment evidence."
+          [columns]="mlExperimentColumns"
+          [rows]="mlExperiments"
+          emptyMessage="No ML experiment records found."
+        ></app-data-table-panel>
       </section>
 
     </ng-container>

@@ -8,10 +8,16 @@ import {DashboardService} from '../../../../core/services/dashboard.service';
 import {AuthService} from '../../../../core/services/auth.service';
 import {AppPermission, AppPermissions} from '../../../../core/permissions/app-permissions';
 import {SummaryCard} from '../../../../shared/components/dashboard/summary-card/summary-card';
-import {DashboardSummaryCard, DashboardUserInfo} from '../../../../shared/components/models/dashboard-ui.model';
+import {
+  DashboardSummaryCard,
+  DashboardTableAction,
+  DashboardTableColumn,
+  DashboardUserInfo
+} from '../../../../shared/components/models/dashboard-ui.model';
 import {DashboardSidebar} from '../../../../shared/components/dashboard/dashboard-sidebar/dashboard-sidebar';
 import {DashboardTopbar} from '../../../../shared/components/dashboard/dashboard-topbar/dashboard-topbar';
 import {ChartPanel} from '../../../../shared/components/dashboard/chart-panel/chart-panel';
+import {DataTablePanel} from '../../../../shared/components/dashboard/data-table-panel/data-table-panel';
 
 interface LoggedUser {
   id?: number;
@@ -40,7 +46,7 @@ interface MenuItem {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, NgxEchartsDirective, SummaryCard, DashboardSidebar, DashboardTopbar, ChartPanel],
+  imports: [CommonModule, NgxEchartsDirective, SummaryCard, DashboardSidebar, DashboardTopbar, ChartPanel, DataTablePanel],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
 })
@@ -130,6 +136,105 @@ export class AdminDashboard implements OnInit {
       email: this.loggedUser?.email,
       roleLabel: this.roleLabel
     };
+  }
+
+  userColumns: DashboardTableColumn[] = [
+    {key: 'username', label: 'Username'},
+    {key: 'nickname', label: 'Name'},
+    {key: 'email', label: 'Email'},
+    {key: 'roles', label: 'Roles'},
+    {key: 'status', label: 'Status', type: 'badge'}
+  ];
+
+  leadColumns: DashboardTableColumn[] = [
+    {key: 'id', label: 'ID'},
+    {key: 'customerName', label: 'Customer'},
+    {key: 'mobile', label: 'Mobile'},
+    {key: 'status', label: 'Status', type: 'badge'},
+    {key: 'expectedPremium', label: 'Premium', type: 'number'}
+  ];
+
+  performanceColumns: DashboardTableColumn[] = [
+    {key: 'username', label: 'Agent'},
+    {key: 'totalLeads', label: 'Leads', type: 'number'},
+    {key: 'convertedLeads', label: 'Converted', type: 'number'},
+    {key: 'totalPremium', label: 'Premium', type: 'number'},
+    {key: 'performanceScore', label: 'Score', type: 'number'}
+  ];
+
+  mlExperimentColumns: DashboardTableColumn[] = [
+    {key: 'modelName', label: 'Model'},
+    {key: 'modelType', label: 'Type'},
+    {key: 'algorithm', label: 'Algorithm'},
+    {key: 'datasetSize', label: 'Dataset', type: 'number'},
+    {key: 'mae', label: 'MAE', type: 'number'},
+    {key: 'rmse', label: 'RMSE', type: 'number'},
+    {key: 'r2Score', label: 'R²', type: 'number'}
+  ];
+
+  getUserActions(): DashboardTableAction[] {
+    const actions: DashboardTableAction[] = [];
+
+    if (this.can(this.permissions.USER_UPDATE)) {
+      actions.push({
+        label: 'Edit',
+        icon: '✏️',
+        tone: 'primary',
+        action: 'edit'
+      });
+    }
+
+    if (this.can(this.permissions.USER_DELETE)) {
+      actions.push({
+        label: 'Delete',
+        icon: '🗑️',
+        tone: 'danger',
+        action: 'delete'
+      });
+    }
+
+    return actions;
+  }
+
+  getLeadActions(): DashboardTableAction[] {
+    const actions: DashboardTableAction[] = [];
+
+    if (this.can(this.permissions.LEAD_VIEW)) {
+      actions.push({
+        label: 'View',
+        icon: '👁️',
+        tone: 'primary',
+        action: 'view'
+      });
+    }
+
+    if (this.can(this.permissions.LEAD_UPDATE)) {
+      actions.push({
+        label: 'Edit',
+        icon: '✏️',
+        tone: 'primary',
+        action: 'edit'
+      });
+    }
+
+    if (this.can(this.permissions.LEAD_DELETE)) {
+      actions.push({
+        label: 'Delete',
+        icon: '🗑️',
+        tone: 'danger',
+        action: 'delete'
+      });
+    }
+
+    return actions;
+  }
+
+  onUserAction(event: { action: string; row: any }): void {
+    console.log('User action:', event.action, event.row);
+  }
+
+  onLeadAction(event: { action: string; row: any }): void {
+    console.log('Lead action:', event.action, event.row);
   }
 
   get displayName(): string {
