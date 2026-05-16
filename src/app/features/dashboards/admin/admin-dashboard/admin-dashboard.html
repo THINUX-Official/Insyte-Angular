@@ -125,6 +125,8 @@
             [columns]="userColumns"
             [rows]="users"
             [actions]="getUserActions()"
+            [pageSize]="10"
+            maxTableHeight="430px"
             emptyMessage="No users found."
             (actionClick)="onUserAction($event)"
           ></app-data-table-panel>
@@ -159,7 +161,8 @@
             [columns]="leadColumns"
             [rows]="leads"
             [actions]="getLeadActions()"
-            [pageSize]="50"
+            [pageSize]="10"
+            maxTableHeight="480px"
             emptyMessage="No leads found."
             (actionClick)="onLeadAction($event)"
           ></app-data-table-panel>

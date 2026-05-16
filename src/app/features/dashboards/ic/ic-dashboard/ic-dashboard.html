@@ -118,7 +118,8 @@
             [columns]="leadColumns"
             [rows]="myLeads"
             [actions]="getLeadActions()"
-            [pageSize]="50"
+            [pageSize]="10"
+            maxTableHeight="430px"
             emptyMessage="No leads found for your account."
             (actionClick)="onLeadAction($event)"
           ></app-data-table-panel>

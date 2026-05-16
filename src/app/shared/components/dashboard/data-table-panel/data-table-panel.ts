@@ -1,7 +1,8 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
 import {CommonModule, DecimalPipe} from '@angular/common';
 
 import {DashboardTableAction, DashboardTableColumn} from '../../models/dashboard-ui.model';
+
 import {EmptyState} from '../empty-state/empty-state';
 
 @Component({
@@ -11,7 +12,7 @@ import {EmptyState} from '../empty-state/empty-state';
   templateUrl: './data-table-panel.html',
   styleUrls: ['./data-table-panel.scss']
 })
-export class DataTablePanel {
+export class DataTablePanel implements OnChanges {
   @Input() title = '';
   @Input() subtitle = '';
 
@@ -19,16 +20,105 @@ export class DataTablePanel {
   @Input({required: true}) rows: any[] = [];
 
   @Input() actions: DashboardTableAction[] = [];
-  @Input() pageSize = 50;
   @Input() emptyMessage = 'No records found.';
+
+  /**
+   * Pagination
+   */
+  @Input() pageSize = 10;
+  @Input() pageSizeOptions: number[] = [5, 10, 25, 50, 100];
+
+  /**
+   * Table scroll
+   */
+  @Input() maxTableHeight = '430px';
 
   @Output() actionClick = new EventEmitter<{
     action: string;
     row: any;
   }>();
 
+  currentPage = 1;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['rows']) {
+      this.currentPage = 1;
+    }
+
+    if (changes['pageSize']) {
+      this.currentPage = 1;
+    }
+  }
+
+  get totalRows(): number {
+    return this.rows?.length || 0;
+  }
+
+  get totalPages(): number {
+    if (!this.totalRows || !this.pageSize) {
+      return 1;
+    }
+
+    return Math.ceil(this.totalRows / this.pageSize);
+  }
+
+  get startIndex(): number {
+    if (!this.totalRows) {
+      return 0;
+    }
+
+    return (this.currentPage - 1) * this.pageSize;
+  }
+
+  get endIndex(): number {
+    return Math.min(this.startIndex + this.pageSize, this.totalRows);
+  }
+
   get visibleRows(): any[] {
-    return this.rows.slice(0, this.pageSize);
+    return this.rows.slice(this.startIndex, this.endIndex);
+  }
+
+  get showingFrom(): number {
+    return this.totalRows === 0 ? 0 : this.startIndex + 1;
+  }
+
+  get showingTo(): number {
+    return this.endIndex;
+  }
+
+  get canGoPrevious(): boolean {
+    return this.currentPage > 1;
+  }
+
+  get canGoNext(): boolean {
+    return this.currentPage < this.totalPages;
+  }
+
+  onPageSizeChange(event: Event): void {
+    const value = Number((event.target as HTMLSelectElement).value);
+
+    this.pageSize = value;
+    this.currentPage = 1;
+  }
+
+  goToFirstPage(): void {
+    this.currentPage = 1;
+  }
+
+  goToPreviousPage(): void {
+    if (this.canGoPrevious) {
+      this.currentPage--;
+    }
+  }
+
+  goToNextPage(): void {
+    if (this.canGoNext) {
+      this.currentPage++;
+    }
+  }
+
+  goToLastPage(): void {
+    this.currentPage = this.totalPages;
   }
 
   onAction(action: DashboardTableAction, row: any): void {
@@ -38,16 +128,31 @@ export class DataTablePanel {
     });
   }
 
-  getValue(row: any, key: string): any {
-    if (!row || !key) {
+  getValue(row: any, columnOrKey: DashboardTableColumn | string): any {
+    if (!row || !columnOrKey) {
       return '-';
     }
 
-    const value = key.split('.').reduce((obj, part) => {
-      return obj ? obj[part] : undefined;
-    }, row);
+    const keys =
+      typeof columnOrKey === 'string'
+        ? [columnOrKey]
+        : [columnOrKey.key, ...(columnOrKey.fallbackKeys || [])];
 
-    return value === undefined || value === null || value === '' ? '-' : value;
+    for (const key of keys) {
+      const value = key.split('.').reduce((obj, part) => {
+        return obj ? obj[part] : undefined;
+      }, row);
+
+      if (Array.isArray(value)) {
+        return value.join(', ');
+      }
+
+      if (value !== undefined && value !== null && value !== '') {
+        return value;
+      }
+    }
+
+    return '-';
   }
 
   getBadgeClass(value: any): string {
@@ -61,6 +166,7 @@ export class DataTablePanel {
       normalized.includes('active') ||
       normalized.includes('completed') ||
       normalized.includes('converted') ||
+      normalized.includes('success') ||
       normalized.includes('low')
     ) {
       return 'success';
@@ -70,6 +176,7 @@ export class DataTablePanel {
       normalized.includes('new') ||
       normalized.includes('open') ||
       normalized.includes('medium') ||
+      normalized.includes('pending') ||
       normalized.includes('in_progress') ||
       normalized.includes('quotation')
     ) {
@@ -80,7 +187,8 @@ export class DataTablePanel {
       normalized.includes('cancel') ||
       normalized.includes('inactive') ||
       normalized.includes('high') ||
-      normalized.includes('critical')
+      normalized.includes('critical') ||
+      normalized.includes('failed')
     ) {
       return 'danger';
     }

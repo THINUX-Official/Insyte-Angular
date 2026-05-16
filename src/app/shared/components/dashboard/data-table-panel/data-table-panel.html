@@ -14,69 +14,140 @@
     [message]="emptyMessage"
   ></app-empty-state>
 
-  <div class="table-wrap" *ngIf="rows.length > 0">
-    <table>
-      <thead>
-      <tr>
-        <th *ngFor="let column of columns">
-          {{ column.label }}
-        </th>
+  <ng-container *ngIf="rows.length > 0">
 
-        <th *ngIf="actions.length > 0">
-          Actions
-        </th>
-      </tr>
-      </thead>
+    <div class="table-toolbar">
+      <div class="record-count">
+        Showing
+        <strong>{{ showingFrom }}</strong>
+        to
+        <strong>{{ showingTo }}</strong>
+        of
+        <strong>{{ totalRows }}</strong>
+        records
+      </div>
 
-      <tbody>
-      <tr *ngFor="let row of visibleRows; trackBy: trackByIndex">
-
-        <td *ngFor="let column of columns">
-          <ng-container [ngSwitch]="column.type">
-
-            <span *ngSwitchCase="'currency'">
-              {{ getValue(row, column.key) === '-' ? '-' : (getValue(row, column.key) | number:'1.2-2') }}
-            </span>
-
-            <span *ngSwitchCase="'number'">
-              {{ getValue(row, column.key) === '-' ? '-' : (getValue(row, column.key) | number:'1.2-2') }}
-            </span>
-
-            <span
-              *ngSwitchCase="'badge'"
-              class="badge"
-              [ngClass]="getBadgeClass(getValue(row, column.key))"
-            >
-              {{ getValue(row, column.key) }}
-            </span>
-
-            <span *ngSwitchDefault>
-              {{ getValue(row, column.key) }}
-            </span>
-
-          </ng-container>
-        </td>
-
-        <td *ngIf="actions.length > 0">
-          <button
-            type="button"
-            class="small-btn"
-            *ngFor="let action of actions"
-            [ngClass]="action.tone || 'primary'"
-            (click)="onAction(action, row)"
+      <label class="page-size-control">
+        Rows per page
+        <select [value]="pageSize" (change)="onPageSizeChange($event)">
+          <option
+            *ngFor="let option of pageSizeOptions"
+            [value]="option"
           >
-            <span *ngIf="action.icon">{{ action.icon }}</span>
-            {{ action.label }}
-          </button>
-        </td>
+            {{ option }}
+          </option>
+        </select>
+      </label>
+    </div>
 
-      </tr>
-      </tbody>
-    </table>
-  </div>
+    <div
+      class="table-scroll"
+      [style.max-height]="maxTableHeight"
+    >
+      <table>
+        <thead>
+        <tr>
+          <th *ngFor="let column of columns">
+            {{ column.label }}
+          </th>
 
-  <div class="table-footer" *ngIf="rows.length > pageSize">
-    Showing {{ pageSize }} of {{ rows.length }} records
-  </div>
+          <th *ngIf="actions.length > 0">
+            Actions
+          </th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr class="actions-header" *ngFor="let row of visibleRows; trackBy: trackByIndex">
+
+          <td *ngFor="let column of columns">
+            <ng-container [ngSwitch]="column.type">
+
+              <span *ngSwitchCase="'currency'">
+                {{ getValue(row, column) === '-' ? '-' : (getValue(row, column) | number:'1.2-2') }}
+              </span>
+
+              <span *ngSwitchCase="'number'">
+                {{ getValue(row, column) === '-' ? '-' : (getValue(row, column) | number:'1.2-2') }}
+              </span>
+
+              <span
+                *ngSwitchCase="'badge'"
+                class="badge"
+                [ngClass]="getBadgeClass(getValue(row, column))"
+              >
+                {{ getValue(row, column) }}
+              </span>
+
+              <span *ngSwitchDefault>
+                {{ getValue(row, column) }}
+              </span>
+
+            </ng-container>
+          </td>
+
+          <td *ngIf="actions.length > 0" class="actions-cell">
+            <div class="action-buttons">
+              <button
+                type="button"
+                class="small-btn"
+                *ngFor="let action of actions"
+                [ngClass]="action.tone || 'primary'"
+                (click)="onAction(action, row)"
+              >
+                <span *ngIf="action.icon">{{ action.icon }}</span>
+                {{ action.label }}
+              </button>
+            </div>
+          </td>
+
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar">
+
+      <div class="pagination-info">
+        Page <strong>{{ currentPage }}</strong> of <strong>{{ totalPages }}</strong>
+      </div>
+
+      <div class="pagination-actions">
+        <button
+          type="button"
+          (click)="goToFirstPage()"
+          [disabled]="!canGoPrevious"
+        >
+          « First
+        </button>
+
+        <button
+          type="button"
+          (click)="goToPreviousPage()"
+          [disabled]="!canGoPrevious"
+        >
+          ‹ Previous
+        </button>
+
+        <button
+          type="button"
+          (click)="goToNextPage()"
+          [disabled]="!canGoNext"
+        >
+          Next ›
+        </button>
+
+        <button
+          type="button"
+          (click)="goToLastPage()"
+          [disabled]="!canGoNext"
+        >
+          Last »
+        </button>
+      </div>
+
+    </div>
+
+  </ng-container>
 
 </article>

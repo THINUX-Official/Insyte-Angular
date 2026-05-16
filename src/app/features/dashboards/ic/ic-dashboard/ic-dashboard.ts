@@ -113,10 +113,15 @@ export class IcDashboard implements OnInit {
 
   leadColumns: DashboardTableColumn[] = [
     {key: 'id', label: 'ID'},
-    {key: 'customerName', label: 'Customer'},
-    {key: 'mobile', label: 'Mobile'},
+    {key: 'customerName', label: 'Customer', fallbackKeys: ['name', 'fullName', 'clientName', 'customerFullName']},
+    {key: 'mobile', label: 'Mobile', fallbackKeys: ['phone', 'contactNumber', 'customerMobile', 'mobileNumber']},
     {key: 'status', label: 'Status', type: 'badge'},
-    {key: 'expectedPremium', label: 'Premium', type: 'number'}
+    {
+      key: 'expectedPremium',
+      label: 'Premium',
+      type: 'number',
+      fallbackKeys: ['premium', 'totalPremium', 'annualPremium', 'monthlyPremium']
+    }
   ];
 
   performanceColumns: DashboardTableColumn[] = [

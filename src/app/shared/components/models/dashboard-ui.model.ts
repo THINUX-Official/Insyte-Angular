@@ -31,6 +31,7 @@ export interface DashboardTableColumn {
   key: string;
   label: string;
   type?: 'text' | 'number' | 'currency' | 'badge';
+  fallbackKeys?: string[];
 }
 
 export interface DashboardTableAction {
