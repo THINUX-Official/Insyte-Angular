@@ -63,18 +63,10 @@
         </div>
 
         <section class="summary-grid">
-          <article
-            class="summary-card"
+          <app-summary-card
             *ngFor="let card of summaryCards"
-            [ngClass]="card.tone"
-          >
-            <div class="summary-icon">{{ card.icon }}</div>
-
-            <div>
-              <h3>{{ card.value }}</h3>
-              <p>{{ card.title }}</p>
-            </div>
-          </article>
+            [card]="card"
+          ></app-summary-card>
         </section>
 
         <section class="mini-grid">

@@ -7,6 +7,8 @@ import {EChartsCoreOption} from 'echarts/core';
 import {DashboardService} from '../../../../core/services/dashboard.service';
 import {AuthService} from '../../../../core/services/auth.service';
 import {AppPermission, AppPermissions} from '../../../../core/permissions/app-permissions';
+import {SummaryCard} from '../../../../shared/components/dashboard/summary-card/summary-card';
+import {DashboardSummaryCard} from '../../../../shared/components/models/dashboard-ui.model';
 
 interface LoggedUser {
   id?: number;
@@ -14,13 +16,6 @@ interface LoggedUser {
   nickname?: string;
   email?: string;
   roles?: string[];
-}
-
-interface SummaryCard {
-  title: string;
-  value: number | string;
-  icon: string;
-  tone: 'blue' | 'green' | 'orange' | 'red' | 'purple' | 'dark';
 }
 
 type AdminSection =
@@ -42,7 +37,7 @@ interface MenuItem {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, NgxEchartsDirective],
+  imports: [CommonModule, NgxEchartsDirective, SummaryCard],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
 })
@@ -72,7 +67,7 @@ export class AdminDashboard implements OnInit {
   predictionChartOption: EChartsCoreOption = {};
   alertChartOption: EChartsCoreOption = {};
 
-  summaryCards: SummaryCard[] = [];
+  summaryCards: DashboardSummaryCard[] = [];
 
   menuItems: MenuItem[] = [
     {

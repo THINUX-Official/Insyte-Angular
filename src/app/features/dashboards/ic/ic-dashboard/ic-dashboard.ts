@@ -7,6 +7,8 @@ import {EChartsCoreOption} from 'echarts/core';
 import {DashboardService} from '../../../../core/services/dashboard.service';
 import {AuthService} from '../../../../core/services/auth.service';
 import {AppPermission, AppPermissions} from '../../../../core/permissions/app-permissions';
+import {DashboardSummaryCard} from '../../../../shared/components/models/dashboard-ui.model';
+import {SummaryCard} from '../../../../shared/components/dashboard/summary-card/summary-card';
 
 interface LoggedUser {
   id?: number;
@@ -31,17 +33,10 @@ interface MenuItem {
   permission: AppPermission;
 }
 
-interface SummaryCard {
-  title: string;
-  value: number | string;
-  icon: string;
-  tone: 'blue' | 'green' | 'orange' | 'red' | 'purple' | 'dark';
-}
-
 @Component({
   selector: 'app-ic-dashboard',
   standalone: true,
-  imports: [CommonModule, NgxEchartsDirective],
+  imports: [CommonModule, NgxEchartsDirective, SummaryCard],
   templateUrl: './ic-dashboard.html',
   styleUrls: ['./ic-dashboard.scss'],
 })
@@ -70,7 +65,7 @@ export class IcDashboard implements OnInit {
   performanceChartOption: EChartsCoreOption = {};
   predictionChartOption: EChartsCoreOption = {};
 
-  summaryCards: SummaryCard[] = [];
+  summaryCards: DashboardSummaryCard[] = [];
 
   menuItems: MenuItem[] = [
     {
