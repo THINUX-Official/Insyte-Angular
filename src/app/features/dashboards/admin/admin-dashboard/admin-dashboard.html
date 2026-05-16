@@ -27,13 +27,13 @@
       (logoutClick)="logout()"
     ></app-dashboard-topbar>
 
-    <div class="message success" *ngIf="pipelineMessage">
-      {{ pipelineMessage }}
-    </div>
-
-    <div class="message error" *ngIf="errorMessage">
-      {{ errorMessage }}
-    </div>
+    <app-alert
+      [show]="!!alertMessage"
+      [type]="alertType"
+      [title]="alertTitle"
+      [message]="alertMessage"
+      (close)="clearAlert()"
+    ></app-alert>
 
     <div class="loader-card" *ngIf="isLoading">
       Loading dashboard data...
@@ -116,6 +116,7 @@
             <button
               class="action-btn"
               *ngIf="can(permissions.USER_CREATE)"
+              (click)="openUserModal()"
             >
               + Add User
             </button>
@@ -282,4 +283,10 @@
 
   </main>
 
+  <app-user-form-modal
+    [isOpen]="isUserModalOpen"
+    [users]="users"
+    (close)="closeUserModal()"
+    (save)="createUser($event)"
+  ></app-user-form-modal>
 </div>

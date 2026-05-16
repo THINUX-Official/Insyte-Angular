@@ -18,6 +18,10 @@ export class DashboardService {
   constructor(private http: HttpClient) {
   }
 
+  createUser(payload: any) {
+    return this.http.post<any>(`${this.apiUrl}/users`, payload);
+  }
+
   getUsers(): Observable<any[]> {
     return this.http
       .get<StandardResponse<any[]> | any[]>(`${this.apiUrl}/users?status=ACTIVE`)

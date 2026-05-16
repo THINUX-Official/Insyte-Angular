@@ -1,0 +1,19 @@
+<div class="alert-box" [ngClass]="type" *ngIf="show && message">
+  <div class="alert-icon">
+    {{ icon }}
+  </div>
+
+  <div class="alert-content">
+    <strong>{{ title || defaultTitle }}</strong>
+    <p>{{ message }}</p>
+  </div>
+
+  <button
+    type="button"
+    class="alert-close"
+    *ngIf="dismissible"
+    (click)="onClose()"
+  >
+    ×
+  </button>
+</div>
