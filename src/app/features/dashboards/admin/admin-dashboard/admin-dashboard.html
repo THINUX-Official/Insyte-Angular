@@ -13,19 +13,19 @@
 
   <main class="admin-main">
 
-    <header class="admin-topbar">
-      <div>
-        <p class="page-label">Admin Control Center</p>
-        <h1>Welcome back, {{ displayName }}</h1>
-        <span>{{ loggedUser?.email || 'admin@gmail.com' }}</span>
-      </div>
-
-      <div class="topbar-actions">
-        <button type="button" class="logout-btn" (click)="logout()">
-          Logout
-        </button>
-      </div>
-    </header>
+    <app-dashboard-topbar
+      pageLabel="Admin Control Center"
+      [title]="'Welcome back, ' + displayName"
+      [subtitle]="loggedUser?.email || 'admin@gmail.com'"
+      theme="admin"
+      [userInfo]="sidebarUserInfo"
+      [showPipeline]="false"
+      [showRefresh]="false"
+      [isPipelineRunning]="isPipelineRunning"
+      (pipelineClick)="runAiPipeline()"
+      (refreshClick)="loadDashboardData()"
+      (logoutClick)="logout()"
+    ></app-dashboard-topbar>
 
     <div class="message success" *ngIf="pipelineMessage">
       {{ pipelineMessage }}

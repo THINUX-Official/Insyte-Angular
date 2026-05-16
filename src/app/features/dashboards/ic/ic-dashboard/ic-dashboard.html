@@ -13,19 +13,16 @@
 
   <main class="ic-main">
 
-    <header class="ic-topbar">
-      <div>
-        <p class="page-label">Insurance Consultant Dashboard</p>
-        <h1>Welcome back, {{ displayName }}</h1>
-        <span>{{ loggedUser?.email || 'agent email not available' }}</span>
-      </div>
-
-      <div class="topbar-actions">
-        <button type="button" class="logout-btn" (click)="logout()">
-          Logout
-        </button>
-      </div>
-    </header>
+    <app-dashboard-topbar
+      pageLabel="Insurance Consultant Dashboard"
+      [title]="'Welcome back, ' + displayName"
+      [subtitle]="loggedUser?.email || 'agent email not available'"
+      theme="agent"
+      [userInfo]="sidebarUserInfo"
+      [showRefresh]="false"
+      [showPipeline]="false"
+      (logoutClick)="logout()"
+    ></app-dashboard-topbar>
 
     <div class="message error" *ngIf="errorMessage">
       {{ errorMessage }}

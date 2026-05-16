@@ -22,106 +22,12 @@
   padding: 28px;
 }
 
-.ic-topbar {
-  min-height: 178px;
-  display: flex;
-  justify-content: space-between;
-  gap: 28px;
-  align-items: flex-start;
-  padding: 32px;
-  border-radius: 32px;
-  color: #ffffff;
-  background: linear-gradient(135deg, rgba(6, 33, 31, 0.96), rgba(15, 63, 70, 0.92)),
-  url('/assets/images/banner.png');
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.20);
-  overflow: hidden;
-  position: relative;
-}
-
-.ic-topbar::after {
-  content: '';
-  position: absolute;
-  width: 310px;
-  height: 310px;
-  right: -120px;
-  bottom: -160px;
-  border-radius: 50%;
-  background: rgba(0, 184, 169, 0.28);
-  filter: blur(4px);
-}
-
-.ic-topbar > div {
-  position: relative;
-  z-index: 2;
-}
-
-.page-label {
-  width: fit-content;
-  display: inline-flex;
-  margin: 0 0 12px;
-  padding: 8px 13px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #dff7ff;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  font-size: 12px;
-  font-weight: 950;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-}
-
-.ic-topbar h1 {
-  margin: 0;
-  font-size: clamp(30px, 4vw, 48px);
-  line-height: 1.08;
-  font-weight: 950;
-  letter-spacing: -1.3px;
-}
-
-.ic-topbar span {
-  display: block;
-  margin-top: 10px;
-  color: #d8f5f2;
-  font-size: 14px;
-  font-weight: 750;
-}
-
-.topbar-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.refresh-btn,
-.logout-btn,
 .action-btn,
 .small-btn {
   border: 0;
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
-}
-
-.refresh-btn,
-.logout-btn {
-  min-height: 48px;
-  border-radius: 17px;
-  padding: 0 20px;
-  font-weight: 950;
-}
-
-.refresh-btn {
-  background: #ffffff;
-  color: #0f172a;
-}
-
-.logout-btn {
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 /* MESSAGES */
@@ -473,14 +379,6 @@ td {
     padding: 20px;
   }
 
-  .ic-topbar {
-    flex-direction: column;
-  }
-
-  .topbar-actions {
-    justify-content: flex-start;
-  }
-
   .chart-grid.two {
     grid-template-columns: 1fr;
   }
@@ -496,11 +394,6 @@ td {
     padding: 14px;
   }
 
-  .ic-topbar {
-    padding: 24px;
-    border-radius: 24px;
-  }
-
   .side-menu {
     grid-template-columns: 1fr;
   }
@@ -512,10 +405,6 @@ td {
 
   .refresh-btn,
   .logout-btn {
-    width: 100%;
-  }
-
-  .topbar-actions {
     width: 100%;
   }
 }

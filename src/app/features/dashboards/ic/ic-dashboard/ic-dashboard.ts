@@ -10,6 +10,7 @@ import {AppPermission, AppPermissions} from '../../../../core/permissions/app-pe
 import {DashboardSummaryCard, DashboardUserInfo} from '../../../../shared/components/models/dashboard-ui.model';
 import {SummaryCard} from '../../../../shared/components/dashboard/summary-card/summary-card';
 import {DashboardSidebar} from '../../../../shared/components/dashboard/dashboard-sidebar/dashboard-sidebar';
+import {DashboardTopbar} from '../../../../shared/components/dashboard/dashboard-topbar/dashboard-topbar';
 
 interface LoggedUser {
   id?: number;
@@ -37,7 +38,7 @@ interface MenuItem {
 @Component({
   selector: 'app-ic-dashboard',
   standalone: true,
-  imports: [CommonModule, NgxEchartsDirective, SummaryCard, DashboardSidebar],
+  imports: [CommonModule, NgxEchartsDirective, SummaryCard, DashboardSidebar, DashboardTopbar],
   templateUrl: './ic-dashboard.html',
   styleUrls: ['./ic-dashboard.scss'],
 })
