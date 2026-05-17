@@ -24,6 +24,8 @@
       (logoutClick)="logout()"
     ></app-dashboard-topbar>
 
+    <app-alerts-container></app-alerts-container>
+
     <div class="message error" *ngIf="errorMessage">
       {{ errorMessage }}
     </div>
@@ -109,6 +111,7 @@
             <button
               class="action-btn"
               *ngIf="can(permissions.LEAD_CREATE)"
+              (click)="openLeadModal()"
             >
               + Add Lead
             </button>
@@ -184,5 +187,14 @@
     </ng-container>
 
   </main>
+
+  <app-lead-form-modal
+    [isOpen]="isLeadModalOpen"
+    [selectedLead]="selectedLeadForEdit"
+    [loggedUserId]="loggedUser?.id || null"
+    (close)="closeLeadModal()"
+    (save)="createLead($event)"
+    (update)="updateLead($event)"
+  ></app-lead-form-modal>
 
 </div>

@@ -18,16 +18,26 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, payload);
   }
 
-  storeSession(response: LoginResponse): void {
+  storeSession(response: LoginResponse, loginUsername?: string): void {
     localStorage.setItem('token', response.token);
-    localStorage.setItem('user', JSON.stringify(response.user));
+
+    const responseUser: any = response.user || {};
+
+    const user = {
+      ...responseUser,
+      username: responseUser.username || loginUsername || ''
+    };
+
+    localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('roles', JSON.stringify(response.roles || []));
+    localStorage.setItem('username', user.username || '');
   }
 
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('roles');
+    localStorage.removeItem('username');
   }
 
   isLoggedIn(): boolean {
@@ -46,6 +56,16 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  getCurrentUsername(): string {
+    const user = this.getCurrentUser();
+
+    if (user?.username) {
+      return user.username;
+    }
+
+    return localStorage.getItem('username') || '';
   }
 
   getRoles(): string[] {

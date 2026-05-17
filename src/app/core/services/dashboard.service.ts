@@ -42,6 +42,24 @@ export class DashboardService {
       .pipe(map(response => this.extractArray(response)));
   }
 
+  getUserByUsername(username: string) {
+    return this.http.get<any>(
+      `${this.apiUrl}/users/by-username?username=${encodeURIComponent(username)}`
+    );
+  }
+
+  createLead(payload: any) {
+    return this.http.post<any>(`${this.apiUrl}/leads`, payload);
+  }
+
+  updateLead(id: number, payload: any) {
+    return this.http.put<any>(`${this.apiUrl}/leads/${id}`, payload);
+  }
+
+  deleteLead(id: number) {
+    return this.http.delete<any>(`${this.apiUrl}/leads/${id}`);
+  }
+
   getLeads(): Observable<any[]> {
     return this.http
       .get<StandardResponse<any[]> | any[]>(`${this.apiUrl}/leads`)

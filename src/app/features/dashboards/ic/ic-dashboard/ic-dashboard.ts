@@ -19,6 +19,9 @@ import {
   DashboardTableColumn,
   DashboardUserInfo
 } from '../../../../shared/components/models/dashboard-ui.model';
+import {LeadFormModal} from '../../../../shared/components/business/lead-form-modal/lead-form-modal';
+import {AlertsContainer} from '../../../../shared/components/ui/alerts-container/alerts-container';
+import {AlertsService} from '../../../../core/services/alerts.service';
 
 interface LoggedUser {
   id?: number;
@@ -52,12 +55,18 @@ interface MenuItem {
     DashboardSidebar,
     DashboardTopbar,
     ChartPanel,
-    DataTablePanel
+    DataTablePanel,
+    LeadFormModal,
+    AlertsContainer
   ],
   templateUrl: './ic-dashboard.html',
   styleUrls: ['./ic-dashboard.scss'],
 })
 export class IcDashboard implements OnInit {
+
+  isLeadModalOpen = false;
+  selectedLeadForEdit: any | null = null;
+
   readonly permissions = AppPermissions;
 
   activeSection: IcSection = 'overview';
@@ -143,14 +152,14 @@ export class IcDashboard implements OnInit {
 
   constructor(
     private dashboardService: DashboardService,
-    private authService: AuthService
+    private authService: AuthService,
+    private alerts: AlertsService
   ) {
   }
 
   ngOnInit(): void {
-    this.loadLoggedUser();
     this.setDefaultSectionByPermission();
-    this.loadDashboardData();
+    this.loadLoggedUser();
   }
 
   get sidebarUserInfo(): DashboardUserInfo {
@@ -160,6 +169,67 @@ export class IcDashboard implements OnInit {
       email: this.loggedUser?.email,
       roleLabel: this.roleLabel
     };
+  }
+
+  openLeadModal(): void {
+    this.selectedLeadForEdit = null;
+    this.isLeadModalOpen = true;
+  }
+
+  openEditLeadModal(lead: any): void {
+    this.selectedLeadForEdit = lead;
+    this.isLeadModalOpen = true;
+  }
+
+  closeLeadModal(): void {
+    this.isLeadModalOpen = false;
+    this.selectedLeadForEdit = null;
+  }
+
+  createLead(payload: any): void {
+    this.dashboardService.createLead(payload).subscribe({
+      next: () => {
+        this.loadDashboardData();
+
+        setTimeout(() => {
+          this.alerts.successDialog(
+            'Lead has been saved successfully.',
+            'Lead Saved'
+          );
+        }, 150);
+      },
+      error: (error) => {
+        console.error('Lead create failed', error);
+
+        this.alerts.errorDialog(
+          'Lead save failed. Please check the entered details and try again.',
+          'Lead Save Failed'
+        );
+      }
+    });
+  }
+
+  updateLead(event: { id: number; payload: any }): void {
+    this.dashboardService.updateLead(event.id, event.payload).subscribe({
+      next: () => {
+        this.loadDashboardData();
+
+        setTimeout(() => {
+          this.alerts.successDialog(
+            'Lead has been updated successfully.',
+            'Lead Updated'
+          );
+        }, 150);
+      },
+      error: (error) => {
+        console.error('Lead update failed', error);
+
+        this.alerts.errorDialog(
+          'Lead update failed. Please check the entered details and try again.',
+          'Lead Update Failed'
+        );
+      }
+    });
   }
 
   get displayName(): string {
@@ -239,19 +309,20 @@ export class IcDashboard implements OnInit {
       });
     }
 
-    if (this.can(this.permissions.LEAD_DELETE)) {
-      actions.push({
-        label: 'Delete',
-        icon: '🗑️',
-        tone: 'danger',
-        action: 'delete'
-      });
-    }
-
     return actions;
   }
 
   onLeadAction(event: { action: string; row: any }): void {
+    if (event.action === 'edit') {
+      this.openEditLeadModal(event.row);
+      return;
+    }
+
+    if (event.action === 'view') {
+      this.openEditLeadModal(event.row);
+      return;
+    }
+
     console.log('IC Lead action:', event.action, event.row);
   }
 
@@ -317,21 +388,61 @@ export class IcDashboard implements OnInit {
   private loadLoggedUser(): void {
     const storedUser = this.authService.getCurrentUser();
     const roles = this.authService.getRoles();
+    const username = storedUser?.username || this.authService.getCurrentUsername();
 
-    if (!storedUser) {
+    console.log('Stored user from auth service:', storedUser);
+    console.log('Username from auth service:', username);
+    console.log('Roles from auth service:', roles);
+
+    if (!username) {
       this.loggedUser = {
         username: 'agent',
         nickname: 'Insurance Consultant',
         email: '',
         roles: roles.length ? roles : ['IC']
       };
+
+      this.alerts.errorDialog(
+        'Logged user username is missing. Please login again.',
+        'User Details Missing'
+      );
       return;
     }
 
     this.loggedUser = {
       ...storedUser,
-      roles: storedUser.roles || roles
+      username,
+      roles: storedUser?.roles || roles
     };
+
+    this.dashboardService.getUserByUsername(username).subscribe({
+      next: (response) => {
+        const user = response?.data || response;
+
+        this.loggedUser = {
+          ...this.loggedUser,
+          id: user.id,
+          username: user.username,
+          nickname: user.nickname,
+          email: user.email,
+          roles: user.roles || this.loggedUser?.roles || roles,
+          supervisorId: user.supervisorId,
+          supervisorUsername: user.supervisorUsername
+        };
+
+        console.log('Final logged user:', this.loggedUser);
+
+        this.loadDashboardData();
+      },
+      error: (error) => {
+        console.error('Logged user fetch failed', error);
+
+        this.alerts.errorDialog(
+          'Logged user details could not be loaded. Please login again.',
+          'User Details Missing'
+        );
+      }
+    });
   }
 
   private applyIcFilters(): void {

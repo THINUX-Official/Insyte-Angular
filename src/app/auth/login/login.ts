@@ -66,7 +66,7 @@ export class Login {
       .pipe(finalize(() => this.isLoading = false))
       .subscribe({
         next: (response) => {
-          this.authService.storeSession(response);
+          this.authService.storeSession(response, payload.username);
           const route = this.authService.getDashboardRoute(response.roles);
           this.router.navigate([route]);
         },
