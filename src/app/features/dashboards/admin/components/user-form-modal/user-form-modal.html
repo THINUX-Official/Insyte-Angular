@@ -3,8 +3,8 @@
 
     <div class="modal-header">
       <div>
-        <h2>Add User</h2>
-        <p>Create a new system user and assign role hierarchy.</p>
+        <h2>{{ modalTitle }}</h2>
+        <p>{{ modalDescription }}</p>
       </div>
 
       <button type="button" class="close-btn" (click)="onClose()">×</button>
@@ -17,20 +17,27 @@
         <input
           type="text"
           [(ngModel)]="form.username"
+          [readonly]="isEditMode"
+          [class.readonly]="isEditMode"
           [class.invalid]="isInvalidUsername()"
           placeholder="Enter username"
         >
-        <small *ngIf="submitted && !form.username.trim()">
+
+        <small *ngIf="submitted && !isEditMode && !form.username.trim()">
           Username is required.
         </small>
 
-        <small *ngIf="submitted && form.username.trim() && isDuplicateUsername()">
+        <small *ngIf="submitted && !isEditMode && form.username.trim() && isDuplicateUsername()">
           This username already exists.
         </small>
       </div>
 
       <div class="form-field">
-        <label>Password *</label>
+        <label>
+          Password
+          <span *ngIf="!isEditMode">*</span>
+          <em *ngIf="isEditMode">(leave blank to keep current password)</em>
+        </label>
 
         <div class="password-box">
           <input
@@ -45,7 +52,9 @@
           </button>
         </div>
 
-        <small *ngIf="isInvalidPassword()">Password must be at least 8 characters.</small>
+        <small *ngIf="isInvalidPassword()">
+          Password must be at least 8 characters.
+        </small>
       </div>
 
       <div class="form-field">
@@ -56,10 +65,18 @@
           [class.invalid]="isInvalidEmail()"
           placeholder="Enter email"
         >
-        <small *ngIf="submitted && !form.email.trim()">Email is required.</small>
-        <small *ngIf="submitted && form.email.trim() && !isDuplicateEmail() && isInvalidEmail()">Enter a valid email
-          address.</small>
-        <small *ngIf="submitted && isDuplicateEmail()">This email already exists.</small>
+
+        <small *ngIf="submitted && !form.email.trim()">
+          Email is required.
+        </small>
+
+        <small *ngIf="submitted && form.email.trim() && !isDuplicateEmail() && isInvalidEmail()">
+          Enter a valid email address.
+        </small>
+
+        <small *ngIf="submitted && isDuplicateEmail()">
+          This email is already used by another user.
+        </small>
       </div>
 
       <div class="form-field">
@@ -69,7 +86,7 @@
           [(ngModel)]="form.phone"
           [class.invalid]="isInvalidPhone()"
           maxlength="15"
-          placeholder="Example: 07X XXX XXXX"
+          placeholder="Example: 0774002633"
         >
 
         <small *ngIf="submitted && form.phone && !isDuplicatePhone() && isInvalidPhone()">
@@ -77,7 +94,7 @@
         </small>
 
         <small *ngIf="submitted && isDuplicatePhone()">
-          This phone number already exists.
+          This phone number is already used by another user.
         </small>
       </div>
 
@@ -102,6 +119,7 @@
             {{ role.name }}
           </option>
         </select>
+
         <small *ngIf="isInvalidRole()">Role is required.</small>
       </div>
 
@@ -131,7 +149,7 @@
       </button>
 
       <button type="button" class="save-btn" (click)="submit()">
-        Save User
+        {{ isEditMode ? 'Update User' : 'Save User' }}
       </button>
     </div>
 

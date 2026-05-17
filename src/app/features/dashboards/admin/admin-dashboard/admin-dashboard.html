@@ -280,7 +280,9 @@
   <app-user-form-modal
     [isOpen]="isUserModalOpen"
     [users]="users"
+    [selectedUser]="selectedUserForEdit"
     (close)="closeUserModal()"
     (save)="createUser($event)"
+    (update)="updateUser($event)"
   ></app-user-form-modal>
 </div>

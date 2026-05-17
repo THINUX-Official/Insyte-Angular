@@ -22,6 +22,20 @@ export class DashboardService {
     return this.http.post<any>(`${this.apiUrl}/users`, payload);
   }
 
+  updateUser(username: string, payload: any) {
+    return this.http.put<any>(
+      `${this.apiUrl}/users/by-username?username=${encodeURIComponent(username)}`,
+      payload
+    );
+  }
+
+  deleteUser(username: string) {
+    return this.http.put<any>(
+      `${this.apiUrl}/users/delete/by-username?username=${encodeURIComponent(username)}`,
+      {}
+    );
+  }
+
   getUsers(): Observable<any[]> {
     return this.http
       .get<StandardResponse<any[]> | any[]>(`${this.apiUrl}/users?status=ACTIVE`)

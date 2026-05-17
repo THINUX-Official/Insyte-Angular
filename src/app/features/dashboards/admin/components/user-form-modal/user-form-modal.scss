@@ -103,6 +103,19 @@
   font-weight: 800;
 }
 
+.form-field label em {
+  color: #64748b;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 750;
+}
+
+.form-field input.readonly {
+  background: #f8fafc;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
 .password-box {
   position: relative;
 }

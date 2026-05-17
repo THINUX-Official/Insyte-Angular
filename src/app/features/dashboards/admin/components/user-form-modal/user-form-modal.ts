@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {AlertsService} from '../../../../../core/services/alerts.service';
@@ -15,12 +15,17 @@ interface RoleOption {
   templateUrl: './user-form-modal.html',
   styleUrls: ['./user-form-modal.scss']
 })
-export class UserFormModal {
+export class UserFormModal implements OnChanges {
   @Input() isOpen = false;
   @Input() users: any[] = [];
+  @Input() selectedUser: any | null = null;
 
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<any>();
+  @Output() update = new EventEmitter<{
+    originalUsername: string;
+    payload: any;
+  }>();
 
   showPassword = false;
   submitted = false;
@@ -47,12 +52,67 @@ export class UserFormModal {
   };
 
   selectedRoleId: number | null = null;
+  originalUsername = '';
 
   constructor(private alerts: AlertsService) {
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedUser'] || changes['isOpen']) {
+      if (this.isOpen && this.selectedUser) {
+        this.patchFormForEdit(this.selectedUser);
+      }
+
+      if (this.isOpen && !this.selectedUser) {
+        this.reset();
+      }
+    }
+  }
+
+  get isEditMode(): boolean {
+    return !!this.selectedUser;
+  }
+
+  get modalTitle(): string {
+    return this.isEditMode ? 'Update User' : 'Add User';
+  }
+
+  get modalDescription(): string {
+    return this.isEditMode
+      ? 'Update user details and role hierarchy.'
+      : 'Create a new system user and assign role hierarchy.';
+  }
+
+  private patchFormForEdit(user: any): void {
+    const roleName = Array.isArray(user.roles) && user.roles.length
+      ? user.roles[0]
+      : null;
+
+    const matchedRole = this.roleOptions.find(role => role.name === roleName);
+
+    this.originalUsername = user.username;
+
+    this.form = {
+      username: user.username || '',
+      password: '',
+      email: user.email || '',
+      phone: user.phone || '',
+      nickname: user.nickname || '',
+      supervisorId: user.supervisorId || null,
+      roleIds: matchedRole ? [matchedRole.id] : [],
+      status: user.status || 'ACTIVE'
+    };
+
+    this.selectedRoleId = matchedRole ? matchedRole.id : null;
+    this.showPassword = false;
+    this.submitted = false;
+  }
 
   isDuplicateUsername(): boolean {
+    if (this.isEditMode) {
+      return false;
+    }
+
     const username = this.form.username.trim().toLowerCase();
 
     if (!username) {
@@ -71,9 +131,16 @@ export class UserFormModal {
       return false;
     }
 
-    return this.users.some(user =>
-      String(user.email || '').trim().toLowerCase() === email
-    );
+    return this.users.some(user => {
+      const existingUsername = String(user.username || '').trim().toLowerCase();
+      const existingEmail = String(user.email || '').trim().toLowerCase();
+
+      if (this.isEditMode && existingUsername === this.originalUsername.toLowerCase()) {
+        return false;
+      }
+
+      return existingEmail === email;
+    });
   }
 
   isDuplicatePhone(): boolean {
@@ -83,9 +150,16 @@ export class UserFormModal {
       return false;
     }
 
-    return this.users.some(user =>
-      String(user.phone || '').trim() === phone
-    );
+    return this.users.some(user => {
+      const existingUsername = String(user.username || '').trim().toLowerCase();
+      const existingPhone = String(user.phone || '').trim();
+
+      if (this.isEditMode && existingUsername === this.originalUsername.toLowerCase()) {
+        return false;
+      }
+
+      return existingPhone === phone;
+    });
   }
 
   togglePassword(): void {
@@ -98,11 +172,23 @@ export class UserFormModal {
   }
 
   isInvalidUsername(): boolean {
+    if (this.isEditMode) {
+      return false;
+    }
+
     return this.submitted && (!this.form.username.trim() || this.isDuplicateUsername());
   }
 
   isInvalidPassword(): boolean {
-    return this.submitted && (!this.form.password || this.form.password.length < 8);
+    if (!this.submitted) {
+      return false;
+    }
+
+    if (this.isEditMode && !this.form.password) {
+      return false;
+    }
+
+    return !this.form.password || this.form.password.length < 8;
   }
 
   isInvalidEmail(): boolean {
@@ -136,12 +222,18 @@ export class UserFormModal {
   }
 
   isFormValid(): boolean {
+    const passwordValid = this.isEditMode
+      ? !this.form.password || this.form.password.length >= 8
+      : !!this.form.password && this.form.password.length >= 8;
+
+    const email = this.form.email.trim();
+
     return (
       !!this.form.username.trim() &&
       !this.isDuplicateUsername() &&
-      !!this.form.password &&
-      this.form.password.length >= 8 &&
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.email.trim()) &&
+      passwordValid &&
+      !!email &&
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
       !this.isDuplicateEmail() &&
       !this.isInvalidPhone() &&
       !!this.selectedRoleId
@@ -155,9 +247,8 @@ export class UserFormModal {
       return;
     }
 
-    const payload = {
+    const payload: any = {
       username: this.form.username.trim(),
-      password: this.form.password,
       email: this.form.email.trim(),
       phone: this.form.phone?.trim() || null,
       nickname: this.form.nickname?.trim() || null,
@@ -166,18 +257,31 @@ export class UserFormModal {
       status: this.form.status
     };
 
+    if (!this.isEditMode || this.form.password?.trim()) {
+      payload.password = this.form.password;
+    }
+
     this.alerts.confirm({
       type: 'warning',
-      title: 'Are you sure?',
-      message: 'Do you want to create this user with the entered details?',
-      confirmText: 'Yes, Save User',
+      title: this.isEditMode ? 'Confirm Update' : 'Confirm Save',
+      message: this.isEditMode
+        ? 'Do you want to update this user with the entered details?'
+        : 'Do you want to create this user with the entered details?',
+      confirmText: this.isEditMode ? 'Yes, Update User' : 'Yes, Save User',
       cancelText: 'No, Continue Editing'
     }).subscribe(confirmed => {
       if (!confirmed) {
         return;
       }
 
-      this.save.emit(payload);
+      if (this.isEditMode) {
+        this.update.emit({
+          originalUsername: this.originalUsername,
+          payload
+        });
+      } else {
+        this.save.emit(payload);
+      }
 
       this.reset();
       this.close.emit();
@@ -197,6 +301,7 @@ export class UserFormModal {
     };
 
     this.selectedRoleId = null;
+    this.originalUsername = '';
     this.showPassword = false;
     this.submitted = false;
   }

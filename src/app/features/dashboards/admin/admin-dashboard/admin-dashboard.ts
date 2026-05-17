@@ -64,6 +64,9 @@ interface MenuItem {
   styleUrls: ['./admin-dashboard.scss'],
 })
 export class AdminDashboard implements OnInit {
+
+  selectedUserForEdit: any | null = null;
+
   readonly permissions = AppPermissions;
 
   activeSection: AdminSection = 'overview';
@@ -305,37 +308,107 @@ export class AdminDashboard implements OnInit {
   isUserModalOpen = false;
 
   openUserModal(): void {
+    this.selectedUserForEdit = null;
+    this.isUserModalOpen = true;
+  }
+
+  openEditUserModal(user: any): void {
+    this.selectedUserForEdit = user;
     this.isUserModalOpen = true;
   }
 
   closeUserModal(): void {
     this.isUserModalOpen = false;
+    this.selectedUserForEdit = null;
   }
 
   createUser(payload: any): void {
     this.dashboardService.createUser(payload).subscribe({
       next: () => {
+        this.loadDashboardData(false);
+
         setTimeout(() => {
           this.alerts.successDialog(
             'User has been saved successfully.',
             'User Saved'
           );
         }, 100);
-
-        this.loadDashboardData(false);
       },
       error: (error) => {
         console.error('User create failed', error);
 
-        const message =
-          error?.error?.message ||
-          error?.error?.data ||
-          'User save failed. Username, email, or phone may already exist.';
+        this.alerts.errorDialog(
+          'User save failed. Please check the entered details and try again.',
+          'User Save Failed'
+        );
+      }
+    });
+  }
+
+  updateUser(event: { originalUsername: string; payload: any }): void {
+    this.dashboardService.updateUser(event.originalUsername, event.payload).subscribe({
+      next: () => {
+        this.loadDashboardData(false);
 
         setTimeout(() => {
-          this.alerts.errorDialog(message, 'User Save Failed');
+          this.alerts.successDialog(
+            'User has been updated successfully.',
+            'User Updated'
+          );
         }, 100);
+      },
+      error: (error) => {
+        console.error('User update failed', error);
+
+        this.alerts.errorDialog(
+          'User update failed. Please check the entered details and try again.',
+          'User Update Failed'
+        );
       }
+    });
+  }
+
+  deleteUser(user: any): void {
+    const username = user?.username;
+
+    if (!username) {
+      this.alerts.errorDialog('Selected user username is missing.', 'Delete Failed');
+      return;
+    }
+
+    this.alerts.confirm({
+      type: 'danger',
+      title: 'Delete User?',
+      message: `Do you want to deactivate user "${username}"? This is a soft delete.`,
+      confirmText: 'Yes, Delete User',
+      cancelText: 'Cancel'
+    }).subscribe(confirmed => {
+      if (!confirmed) {
+        return;
+      }
+
+      this.dashboardService.deleteUser(username).subscribe({
+        next: () => {
+          this.loadDashboardData(false);
+
+          setTimeout(() => {
+            this.alerts.successDialog(
+              'User has been deactivated successfully.',
+              'User Deleted'
+            );
+          }, 100);
+        },
+        error: (error) => {
+          console.error('User delete failed', error);
+
+          const message =
+            error?.error?.message ||
+            error?.error?.data ||
+            'User delete failed. Please try again.';
+
+          this.alerts.errorDialog(message, 'User Delete Failed');
+        }
+      });
     });
   }
 
@@ -419,6 +492,16 @@ export class AdminDashboard implements OnInit {
   }
 
   onUserAction(event: { action: string; row: any }): void {
+    if (event.action === 'edit') {
+      this.openEditUserModal(event.row);
+      return;
+    }
+
+    if (event.action === 'delete') {
+      this.deleteUser(event.row);
+      return;
+    }
+
     console.log('User action:', event.action, event.row);
   }
 
