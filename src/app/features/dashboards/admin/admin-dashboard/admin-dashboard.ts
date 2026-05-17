@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {forkJoin} from 'rxjs';
 import {EChartsCoreOption} from 'echarts/core';
@@ -20,7 +20,8 @@ import {
   DashboardUserInfo,
 } from '../../../../shared/components/models/dashboard-ui.model';
 import {UserFormModal} from '../components/user-form-modal/user-form-modal';
-import {AlertType, AppAlert} from '../../../../shared/components/ui/app-alert/app-alert';
+import {AlertsContainer} from '../../../../shared/components/ui/alerts-container/alerts-container';
+import {AlertsService} from '../../../../core/services/alerts.service';
 
 interface LoggedUser {
   id?: number;
@@ -57,7 +58,7 @@ interface MenuItem {
     ChartPanel,
     DataTablePanel,
     UserFormModal,
-    AppAlert
+    AlertsContainer
   ],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
@@ -185,7 +186,7 @@ export class AdminDashboard implements OnInit {
   constructor(
     private dashboardService: DashboardService,
     private authService: AuthService,
-    private cdr: ChangeDetectorRef
+    private alerts: AlertsService
   ) {
   }
 
@@ -228,8 +229,11 @@ export class AdminDashboard implements OnInit {
     }
   }
 
-  loadDashboardData(): void {
-    this.isLoading = true;
+  loadDashboardData(showLoader: boolean = true): void {
+    if (showLoader) {
+      this.isLoading = true;
+    }
+
     this.errorMessage = '';
     this.pipelineMessage = '';
 
@@ -255,22 +259,13 @@ export class AdminDashboard implements OnInit {
         this.buildCharts();
 
         this.isLoading = false;
-
-        if (this.pendingAlertAfterReload) {
-          const alert = this.pendingAlertAfterReload;
-          this.pendingAlertAfterReload = null;
-
-          setTimeout(() => {
-            this.showAlert(alert.type, alert.message, alert.title);
-          }, 50);
-        }
       },
       error: (error) => {
         console.error('Dashboard load failed', error);
+
         this.isLoading = false;
 
-        this.showAlert(
-          'error',
+        this.alerts.error(
           'Dashboard data load failed. Please check backend API, CORS, and Spring Boot server.',
           'Dashboard Load Failed'
         );
@@ -320,13 +315,14 @@ export class AdminDashboard implements OnInit {
   createUser(payload: any): void {
     this.dashboardService.createUser(payload).subscribe({
       next: () => {
-        this.pendingAlertAfterReload = {
-          type: 'success',
-          title: 'User Created',
-          message: 'User has been created successfully.'
-        };
+        setTimeout(() => {
+          this.alerts.successDialog(
+            'User has been saved successfully.',
+            'User Saved'
+          );
+        }, 100);
 
-        this.loadDashboardData();
+        this.loadDashboardData(false);
       },
       error: (error) => {
         console.error('User create failed', error);
@@ -334,51 +330,13 @@ export class AdminDashboard implements OnInit {
         const message =
           error?.error?.message ||
           error?.error?.data ||
-          'User create failed. Username, email, or phone may already exist.';
+          'User save failed. Username, email, or phone may already exist.';
 
-        this.showAlert('error', message, 'User Create Failed');
+        setTimeout(() => {
+          this.alerts.errorDialog(message, 'User Save Failed');
+        }, 100);
       }
     });
-  }
-
-  alertMessage = '';
-  alertTitle = '';
-  alertType: AlertType = 'info';
-  private alertTimeoutId: any = null;
-
-  private pendingAlertAfterReload: {
-    type: AlertType;
-    title: string;
-    message: string;
-  } | null = null;
-
-  showAlert(type: AlertType, message: string, title = ''): void {
-    if (this.alertTimeoutId) {
-      clearTimeout(this.alertTimeoutId);
-      this.alertTimeoutId = null;
-    }
-
-    this.alertType = type;
-    this.alertTitle = title;
-    this.alertMessage = message;
-
-    this.cdr.detectChanges();
-
-    this.alertTimeoutId = setTimeout(() => {
-      this.clearAlert();
-    }, 4500);
-  }
-
-  clearAlert(): void {
-    this.alertMessage = '';
-    this.alertTitle = '';
-
-    if (this.alertTimeoutId) {
-      clearTimeout(this.alertTimeoutId);
-      this.alertTimeoutId = null;
-    }
-
-    this.cdr.detectChanges();
   }
 
   getUserActions(): DashboardTableAction[] {

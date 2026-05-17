@@ -27,13 +27,7 @@
       (logoutClick)="logout()"
     ></app-dashboard-topbar>
 
-    <app-alert
-      [show]="!!alertMessage"
-      [type]="alertType"
-      [title]="alertTitle"
-      [message]="alertMessage"
-      (close)="clearAlert()"
-    ></app-alert>
+    <app-alerts-container></app-alerts-container>
 
     <div class="loader-card" *ngIf="isLoading">
       Loading dashboard data...

@@ -1,6 +1,7 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
+import {AlertsService} from '../../../../../core/services/alerts.service';
 
 interface RoleOption {
   id: number;
@@ -46,6 +47,10 @@ export class UserFormModal {
   };
 
   selectedRoleId: number | null = null;
+
+  constructor(private alerts: AlertsService) {
+  }
+
 
   isDuplicateUsername(): boolean {
     const username = this.form.username.trim().toLowerCase();
@@ -161,11 +166,22 @@ export class UserFormModal {
       status: this.form.status
     };
 
-    this.save.emit(payload);
+    this.alerts.confirm({
+      type: 'warning',
+      title: 'Are you sure?',
+      message: 'Do you want to create this user with the entered details?',
+      confirmText: 'Yes, Save User',
+      cancelText: 'No, Continue Editing'
+    }).subscribe(confirmed => {
+      if (!confirmed) {
+        return;
+      }
 
-    // clear form and close popup immediately after Save User click
-    this.reset();
-    this.close.emit();
+      this.save.emit(payload);
+
+      this.reset();
+      this.close.emit();
+    });
   }
 
   reset(): void {
