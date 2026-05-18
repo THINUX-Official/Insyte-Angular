@@ -129,6 +129,8 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No UL users found under your supervision."
+          [enableExport]="true"
+          exportFileName="bm-ul_team-report"
         ></app-data-table-panel>
 
         <app-data-table-panel
@@ -143,6 +145,8 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No IC users found under your team."
+          [enableExport]="true"
+          exportFileName="bm-ic_team-report"
         ></app-data-table-panel>
 
       </section>
@@ -205,6 +209,8 @@
           [pageSize]="10"
           maxTableHeight="430px"
           emptyMessage="No performance records found."
+          [enableExport]="true"
+          exportFileName="bm-branch-performance-report"
         ></app-data-table-panel>
 
         <app-location-analytics
@@ -230,6 +236,8 @@
           [pageSize]="10"
           maxTableHeight="430px"
           emptyMessage="No recommendations found for your branch."
+          [enableExport]="true"
+          exportFileName="bm-branch-recommendation-report"
         ></app-data-table-panel>
 
       </section>

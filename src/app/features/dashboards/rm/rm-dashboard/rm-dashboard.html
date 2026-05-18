@@ -138,6 +138,8 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No BM users found under your supervision."
+          [enableExport]="true"
+          exportFileName="rm-bm_team-report"
         ></app-data-table-panel>
 
         <app-data-table-panel
@@ -152,9 +154,12 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No UL users found under your region."
+          [enableExport]="true"
+          exportFileName="rm-ul_team-report"
         ></app-data-table-panel>
 
         <app-data-table-panel
+          *ngIf="activeTeamTab === 'ic'"
           title="IC Team Members"
           subtitle="Insurance consultants under your hierarchy."
           [columns]="teamUserColumns"
@@ -165,6 +170,8 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No IC users found."
+          [enableExport]="true"
+          exportFileName="rm-ic_team-report"
         ></app-data-table-panel>
 
       </section>
@@ -227,6 +234,8 @@
           [pageSize]="10"
           maxTableHeight="430px"
           emptyMessage="No performance records found."
+          [enableExport]="true"
+          exportFileName="rm-ic_performance-report"
         ></app-data-table-panel>
 
         <app-location-analytics
@@ -252,6 +261,8 @@
           [pageSize]="10"
           maxTableHeight="430px"
           emptyMessage="No recommendations found for your region."
+          [enableExport]="true"
+          exportFileName="rm-regional-recommendation-report"
         ></app-data-table-panel>
 
       </section>

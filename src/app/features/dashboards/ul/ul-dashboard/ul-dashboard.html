@@ -108,6 +108,8 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No IC users found under your supervision."
+          [enableExport]="true"
+          exportFileName="ul-team-report"
         ></app-data-table-panel>
 
       </section>
@@ -170,6 +172,8 @@
           [pageSize]="10"
           maxTableHeight="430px"
           emptyMessage="No performance records found."
+          [enableExport]="true"
+          exportFileName="ul-team-performance-report"
         ></app-data-table-panel>
 
         <app-location-analytics
@@ -195,6 +199,8 @@
           [pageSize]="10"
           maxTableHeight="430px"
           emptyMessage="No recommendations found for your team."
+          [enableExport]="true"
+          exportFileName="ul-team-recommendation-report"
         ></app-data-table-panel>
 
       </section>

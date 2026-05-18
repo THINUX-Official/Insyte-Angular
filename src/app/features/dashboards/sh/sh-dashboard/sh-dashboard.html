@@ -157,6 +157,8 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No ZO users found under your supervision."
+          [enableExport]="true"
+          exportFileName="sh-zo_team-report"
         ></app-data-table-panel>
 
         <app-data-table-panel
@@ -171,6 +173,8 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No RM users found under your sector."
+          [enableExport]="true"
+          exportFileName="sh-rm_team-report"
         ></app-data-table-panel>
 
         <app-data-table-panel
@@ -185,6 +189,8 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No BM users found under your sector."
+          [enableExport]="true"
+          exportFileName="sh-bm_team-report"
         ></app-data-table-panel>
 
         <app-data-table-panel
@@ -199,6 +205,8 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No UL users found under your sector."
+          [enableExport]="true"
+          exportFileName="sh-ul_team-report"
         ></app-data-table-panel>
 
         <app-data-table-panel
@@ -213,6 +221,8 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No IC users found under your sector."
+          [enableExport]="true"
+          exportFileName="sh-ic_team-report"
         ></app-data-table-panel>
 
       </section>
@@ -265,12 +275,6 @@
             [hasData]="teamPredictions.length > 0"
             emptyMessage="No prediction records available."
           ></app-chart-panel>
-
-          <app-location-analytics
-            [year]="2026"
-            [month]="5"
-            [limit]="5">
-          </app-location-analytics>
         </section>
 
         <app-data-table-panel
@@ -281,8 +285,15 @@
           [pageSize]="10"
           maxTableHeight="430px"
           emptyMessage="No performance records found."
+          [enableExport]="true"
+          exportFileName="sh-ic_performance-report"
         ></app-data-table-panel>
 
+        <app-location-analytics
+          [limit]="5"
+          [month]="5"
+          [year]="2026">
+        </app-location-analytics>
       </section>
 
       <!-- RECOMMENDATIONS -->
@@ -301,6 +312,8 @@
           [pageSize]="10"
           maxTableHeight="430px"
           emptyMessage="No recommendations found for your sector."
+          [enableExport]="true"
+          exportFileName="sh-recommendation-report"
         ></app-data-table-panel>
 
       </section>

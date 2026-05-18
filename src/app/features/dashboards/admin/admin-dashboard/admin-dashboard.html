@@ -123,6 +123,8 @@
             [pageSize]="10"
             maxTableHeight="430px"
             emptyMessage="No users found."
+            [enableExport]="true"
+            exportFileName="admin-all-user-report"
             (actionClick)="onUserAction($event)"
           ></app-data-table-panel>
         </div>
@@ -153,7 +155,7 @@
             maxTableHeight="480px"
             emptyMessage="No leads found."
             [enableExport]="true"
-            exportFileName="admin-team-leads-report"
+            exportFileName="admin-all-leads-report"
             (actionClick)="onLeadAction($event)"
           ></app-data-table-panel>
         </div>
@@ -193,6 +195,8 @@
           [columns]="performanceColumns"
           [rows]="getTopPerformers()"
           emptyMessage="No performance records found."
+          [enableExport]="true"
+          exportFileName="admin-top-agent-performance-report"
         ></app-data-table-panel>
 
         <app-location-analytics
@@ -235,6 +239,8 @@
           [rows]="getOpenFraudAlerts()"
           [actions]="getFraudActions()"
           emptyMessage="No open fraud alerts found."
+          [enableExport]="true"
+          exportFileName="admin-opern-fraud-alert-report"
           (actionClick)="onFraudAction($event)"
         ></app-data-table-panel>
 
@@ -254,6 +260,8 @@
           [columns]="recommendationColumns"
           [rows]="getLatestRecommendations()"
           emptyMessage="No recommendations found."
+          [enableExport]="true"
+          exportFileName="admin-recommendation-report"
         ></app-data-table-panel>
 
       </section>

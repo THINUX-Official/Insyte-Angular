@@ -147,6 +147,8 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No RM users found under your supervision."
+          [enableExport]="true"
+          exportFileName="zo-rm_team-report"
         ></app-data-table-panel>
 
         <app-data-table-panel
@@ -161,6 +163,8 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No BM users found under your zone."
+          [enableExport]="true"
+          exportFileName="zo-bm_team-report"
         ></app-data-table-panel>
 
         <app-data-table-panel
@@ -175,6 +179,8 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No UL users found under your zone."
+          [enableExport]="true"
+          exportFileName="zo-ul_team-report"
         ></app-data-table-panel>
 
         <app-data-table-panel
@@ -189,6 +195,8 @@
           statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No IC users found under your zone."
+          [enableExport]="true"
+          exportFileName="zo-ic_team-report"
         ></app-data-table-panel>
 
       </section>
@@ -242,11 +250,6 @@
             emptyMessage="No prediction records available."
           ></app-chart-panel>
 
-          <app-location-analytics
-            [year]="2026"
-            [month]="5"
-            [limit]="5">
-          </app-location-analytics>
         </section>
 
         <app-data-table-panel
@@ -257,7 +260,16 @@
           [pageSize]="10"
           maxTableHeight="430px"
           emptyMessage="No performance records found."
-        ></app-data-table-panel>
+          [enableExport]="true"
+          exportFileName="zo-ic_performance-report"
+        >
+
+        </app-data-table-panel>
+        <app-location-analytics
+          [limit]="5"
+          [month]="5"
+          [year]="2026">
+        </app-location-analytics>
 
       </section>
 
@@ -277,6 +289,8 @@
           [pageSize]="10"
           maxTableHeight="430px"
           emptyMessage="No recommendations found for your zone."
+          [enableExport]="true"
+          exportFileName="zo-recommendation-report"
         ></app-data-table-panel>
 
       </section>

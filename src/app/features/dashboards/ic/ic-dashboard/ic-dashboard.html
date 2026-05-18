@@ -164,6 +164,8 @@
           [columns]="performanceColumns"
           [rows]="myPerformance"
           emptyMessage="No performance records found for your account."
+          [enableExport]="true"
+          exportFileName="ic-performance-report"
         ></app-data-table-panel>
 
       </section>
@@ -182,6 +184,8 @@
           [columns]="recommendationColumns"
           [rows]="myRecommendations"
           emptyMessage="No recommendations found for your account."
+          [enableExport]="true"
+          exportFileName="ic-recommendation-report"
         ></app-data-table-panel>
 
       </section>
