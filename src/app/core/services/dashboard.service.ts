@@ -101,8 +101,18 @@ export class DashboardService {
   }
 
   getFraudAlerts(): Observable<any[]> {
+    return this.getMyTeamFraudAlerts();
+  }
+
+  getMyTeamFraudAlerts(): Observable<any[]> {
     return this.http
-      .get<any[] | StandardResponse<any[]>>(`${this.apiUrl}/fraud-alerts`)
+      .get<any[] | StandardResponse<any[]>>(`${this.apiUrl}/fraud-alerts/my-team`)
+      .pipe(map(response => this.extractArray(response)));
+  }
+
+  getMyTeamOpenFraudAlerts(): Observable<any[]> {
+    return this.http
+      .get<any[] | StandardResponse<any[]>>(`${this.apiUrl}/fraud-alerts/my-team/open`)
       .pipe(map(response => this.extractArray(response)));
   }
 
