@@ -67,7 +67,10 @@ export class Login {
       .subscribe({
         next: (response) => {
           this.authService.storeSession(response, payload.username);
-          const route = this.authService.getDashboardRoute(response.roles);
+
+          const roles = response.roles || response.user?.roles || [];
+          const route = this.authService.getDashboardRoute(roles);
+
           this.router.navigate([route]);
         },
         error: (err) => {

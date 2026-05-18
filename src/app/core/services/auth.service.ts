@@ -19,22 +19,34 @@ export class AuthService {
   }
 
   storeSession(response: LoginResponse, loginUsername?: string): void {
-    localStorage.setItem('token', response.token);
+    if (!response?.token) {
+      throw new Error('Login token not found in response');
+    }
 
-    const responseUser: any = response.user || {};
+    const normalizedRoles = this.normalizeRoles(response.roles || response.user?.roles || []);
 
     const user = {
-      ...responseUser,
-      username: responseUser.username || loginUsername || ''
+      id: response.id || response.user?.id,
+      username: response.username || response.user?.username || loginUsername || '',
+      email: response.email || response.user?.email || '',
+      phone: response.phone || response.user?.phone || '',
+      nickname: response.nickname || response.user?.nickname || response.user?.fullName || '',
+      status: response.status || response.user?.status || '',
+      roles: normalizedRoles,
+      supervisorId: response.user?.supervisorId,
+      supervisorUsername: response.user?.supervisorUsername
     };
 
+    localStorage.setItem('token', response.token);
+    localStorage.setItem('tokenType', response.tokenType || 'Bearer');
     localStorage.setItem('user', JSON.stringify(user));
-    localStorage.setItem('roles', JSON.stringify(response.roles || []));
+    localStorage.setItem('roles', JSON.stringify(normalizedRoles));
     localStorage.setItem('username', user.username || '');
   }
 
   logout(): void {
     localStorage.removeItem('token');
+    localStorage.removeItem('tokenType');
     localStorage.removeItem('user');
     localStorage.removeItem('roles');
     localStorage.removeItem('username');
@@ -42,6 +54,10 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     return !!localStorage.getItem('token');
+  }
+
+  getToken(): string {
+    return localStorage.getItem('token') || '';
   }
 
   getCurrentUser(): any | null {
@@ -76,14 +92,14 @@ export class AuthService {
     }
 
     try {
-      return JSON.parse(roles);
+      return this.normalizeRoles(JSON.parse(roles));
     } catch {
       return [];
     }
   }
 
   hasRole(role: string): boolean {
-    return this.getRoles().includes(role);
+    return this.getRoles().includes(this.normalizeRole(role));
   }
 
   hasAnyRole(roles: string[]): boolean {
@@ -104,14 +120,27 @@ export class AuthService {
   }
 
   getDashboardRoute(roles: string[]): string {
-    if (roles.includes('ADMIN')) return '/admin';
-    if (roles.includes('SH')) return '/sh';
-    if (roles.includes('ZO')) return '/zo';
-    if (roles.includes('RM')) return '/rm';
-    if (roles.includes('BM')) return '/bm';
-    if (roles.includes('UL')) return '/ul';
-    if (roles.includes('IC')) return '/ic';
+    const normalizedRoles = this.normalizeRoles(roles);
+
+    if (normalizedRoles.includes('ADMIN')) return '/admin';
+    if (normalizedRoles.includes('SH')) return '/sh';
+    if (normalizedRoles.includes('ZO')) return '/zo';
+    if (normalizedRoles.includes('RM')) return '/rm';
+    if (normalizedRoles.includes('BM')) return '/bm';
+    if (normalizedRoles.includes('UL')) return '/ul';
+    if (normalizedRoles.includes('IC')) return '/ic';
 
     return '/unauthorized';
+  }
+
+  private normalizeRoles(roles: string[]): string[] {
+    return roles.map(role => this.normalizeRole(role));
+  }
+
+  private normalizeRole(role: string): string {
+    return String(role || '')
+      .trim()
+      .toUpperCase()
+      .replace('ROLE_', '');
   }
 }

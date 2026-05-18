@@ -4,8 +4,10 @@ import {map, Observable} from 'rxjs';
 import {environment} from '../../../environments/environment';
 
 interface StandardResponse<T> {
-  code: number;
-  message: string;
+  code?: number;
+  status?: number;
+  statusCode?: number;
+  message?: string;
   data: T;
 }
 
@@ -37,8 +39,12 @@ export class DashboardService {
   }
 
   getUsers(): Observable<any[]> {
+    return this.getMyTeamUsers();
+  }
+
+  getMyTeamUsers(): Observable<any[]> {
     return this.http
-      .get<StandardResponse<any[]> | any[]>(`${this.apiUrl}/users?status=ACTIVE`)
+      .get<StandardResponse<any[]> | any[]>(`${this.apiUrl}/users/my-team`)
       .pipe(map(response => this.extractArray(response)));
   }
 
@@ -61,20 +67,36 @@ export class DashboardService {
   }
 
   getLeads(): Observable<any[]> {
+    return this.getMyTeamLeads();
+  }
+
+  getMyTeamLeads(): Observable<any[]> {
     return this.http
-      .get<StandardResponse<any[]> | any[]>(`${this.apiUrl}/leads`)
+      .get<StandardResponse<any[]> | any[]>(`${this.apiUrl}/leads/my-team`)
       .pipe(map(response => this.extractArray(response)));
   }
 
   getAgentPerformanceByMonth(year: number, month: number): Observable<any[]> {
+    return this.getMyTeamAgentPerformanceByMonth(year, month);
+  }
+
+  getMyTeamAgentPerformanceByMonth(year: number, month: number): Observable<any[]> {
     return this.http
-      .get<any[] | StandardResponse<any[]>>(`${this.apiUrl}/agent-performance/month?year=${year}&month=${month}`)
+      .get<any[] | StandardResponse<any[]>>(
+        `${this.apiUrl}/agent-performance/my-team/month?year=${year}&month=${month}`
+      )
       .pipe(map(response => this.extractArray(response)));
   }
 
   getAiPredictionsByMonth(year: number, month: number): Observable<any[]> {
+    return this.getMyTeamAiPredictionsByMonth(year, month);
+  }
+
+  getMyTeamAiPredictionsByMonth(year: number, month: number): Observable<any[]> {
     return this.http
-      .get<any[] | StandardResponse<any[]>>(`${this.apiUrl}/ai-predictions/month?year=${year}&month=${month}`)
+      .get<any[] | StandardResponse<any[]>>(
+        `${this.apiUrl}/ai-predictions/my-team/month?year=${year}&month=${month}`
+      )
       .pipe(map(response => this.extractArray(response)));
   }
 
@@ -85,8 +107,12 @@ export class DashboardService {
   }
 
   getRecommendations(): Observable<any[]> {
+    return this.getMyTeamRecommendations();
+  }
+
+  getMyTeamRecommendations(): Observable<any[]> {
     return this.http
-      .get<any[] | StandardResponse<any[]>>(`${this.apiUrl}/recommendations`)
+      .get<any[] | StandardResponse<any[]>>(`${this.apiUrl}/recommendations/my-team`)
       .pipe(map(response => this.extractArray(response)));
   }
 

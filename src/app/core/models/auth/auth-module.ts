@@ -8,7 +8,6 @@ import {CommonModule} from '@angular/common';
   ]
 })
 export class AuthModule {
-
 }
 
 export interface LoginRequest {
@@ -18,15 +17,31 @@ export interface LoginRequest {
 }
 
 export interface UserDto {
-  id: number;
-  username: string;
-  email: string;
-  fullName: string;
-  status: string;
+  id?: number;
+  username?: string;
+  email?: string;
+  phone?: string;
+  nickname?: string;
+  fullName?: string;
+  status?: string;
+  roles?: string[];
+  supervisorId?: number;
+  supervisorUsername?: string;
 }
 
 export interface LoginResponse {
+  id?: number;
+  username?: string;
+  email?: string;
+  phone?: string;
+  nickname?: string;
+  status?: string;
+  roles?: string[];
+
   token: string;
-  user: UserDto;
-  roles: string[];
+  tokenType?: string;
+  message?: string;
+
+  // old response support
+  user?: UserDto;
 }
