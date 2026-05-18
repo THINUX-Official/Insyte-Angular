@@ -152,6 +152,8 @@
             [pageSize]="10"
             maxTableHeight="480px"
             emptyMessage="No leads found."
+            [enableExport]="true"
+            exportFileName="admin-team-leads-report"
             (actionClick)="onLeadAction($event)"
           ></app-data-table-panel>
         </div>

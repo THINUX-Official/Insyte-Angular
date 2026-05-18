@@ -349,6 +349,28 @@ tbody tr:last-child td {
   background: #94a3b8;
 }
 
+.export-btn {
+  border: none;
+  border-radius: 10px;
+  background: #1f4fd8;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 6px 14px rgba(31, 79, 216, 0.18);
+
+  &:hover:not(:disabled) {
+    filter: brightness(0.96);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
 @media (max-width: 720px) {
   .table-panel {
     padding: 18px;

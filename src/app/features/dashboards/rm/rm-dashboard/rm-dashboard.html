@@ -186,6 +186,8 @@
           [pageSize]="10"
           maxTableHeight="480px"
           emptyMessage="No regional leads found."
+          [enableExport]="true"
+          exportFileName="rm-team-leads-report"
           (actionClick)="onLeadAction($event)"
         ></app-data-table-panel>
 

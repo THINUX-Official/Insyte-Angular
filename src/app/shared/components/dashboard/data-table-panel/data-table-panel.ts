@@ -1,15 +1,16 @@
 import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
-import {CommonModule, CurrencyPipe, DecimalPipe} from '@angular/common';
+import {CommonModule, DecimalPipe} from '@angular/common';
 
 import {DashboardTableAction, DashboardTableColumn} from '../../models/dashboard-ui.model';
 
 import {EmptyState} from '../empty-state/empty-state';
 import {FormsModule} from '@angular/forms';
+import {CsvExportUtil} from '../../../../core/util/csv-export.util';
 
 @Component({
   selector: 'app-data-table-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, CurrencyPipe, DecimalPipe, EmptyState],
+  imports: [CommonModule, FormsModule, DecimalPipe, EmptyState],
   templateUrl: './data-table-panel.html',
   styleUrls: ['./data-table-panel.scss']
 })
@@ -27,6 +28,9 @@ export class DataTablePanel implements OnChanges {
 
   @Input() title = '';
   @Input() subtitle = '';
+
+  @Input() enableExport = false;
+  @Input() exportFileName = 'dashboard-report';
 
   @Input({required: true}) columns: DashboardTableColumn[] = [];
   @Input({required: true}) rows: any[] = [];
@@ -157,6 +161,14 @@ export class DataTablePanel implements OnChanges {
     this.dateFrom = '';
     this.dateTo = '';
     this.currentPage = 1;
+  }
+
+  exportCsv(): void {
+    CsvExportUtil.exportToCsv(
+      this.exportFileName,
+      this.filteredRows.length ? this.filteredRows : this.rows,
+      this.columns
+    );
   }
 
   hasActiveFilters(): boolean {

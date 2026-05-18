@@ -124,6 +124,8 @@
             [pageSize]="10"
             maxTableHeight="430px"
             emptyMessage="No leads found for your account."
+            [enableExport]="true"
+            exportFileName="ic-team-leads-report"
             (actionClick)="onLeadAction($event)"
           ></app-data-table-panel>
         </div>

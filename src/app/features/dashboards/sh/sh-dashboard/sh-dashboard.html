@@ -234,6 +234,8 @@
           [pageSize]="10"
           maxTableHeight="480px"
           emptyMessage="No sector leads found."
+          [enableExport]="true"
+          exportFileName="sh-team-leads-report"
           (actionClick)="onLeadAction($event)"
         ></app-data-table-panel>
 

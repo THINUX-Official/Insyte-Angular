@@ -1,10 +1,19 @@
 <article class="table-panel">
 
-  <div class="panel-title" *ngIf="title || subtitle">
+  <div class="panel-title" *ngIf="title || subtitle || enableExport">
     <div>
       <h2 *ngIf="title">{{ title }}</h2>
       <p *ngIf="subtitle">{{ subtitle }}</p>
     </div>
+
+    <button
+      *ngIf="enableExport"
+      type="button"
+      class="export-btn"
+      [disabled]="!rows || rows.length === 0"
+      (click)="exportCsv()">
+      ⬇ Export CSV
+    </button>
   </div>
 
   <app-empty-state

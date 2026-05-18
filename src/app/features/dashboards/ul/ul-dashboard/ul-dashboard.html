@@ -129,6 +129,8 @@
           [pageSize]="10"
           maxTableHeight="480px"
           emptyMessage="No team leads found."
+          [enableExport]="true"
+          exportFileName="ul-team-leads-report"
           (actionClick)="onLeadAction($event)"
         ></app-data-table-panel>
 

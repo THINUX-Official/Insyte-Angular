@@ -210,6 +210,8 @@
           [pageSize]="10"
           maxTableHeight="480px"
           emptyMessage="No zonal leads found."
+          [enableExport]="true"
+          exportFileName="zo-team-leads-report"
           (actionClick)="onLeadAction($event)"
         ></app-data-table-panel>
 

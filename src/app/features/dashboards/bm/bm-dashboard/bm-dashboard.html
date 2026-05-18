@@ -164,6 +164,8 @@
           [pageSize]="10"
           maxTableHeight="480px"
           emptyMessage="No branch leads found."
+          [enableExport]="true"
+          exportFileName="bm-team-leads-report"
           (actionClick)="onLeadAction($event)"
         ></app-data-table-panel>
 
