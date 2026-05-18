@@ -17,27 +17,85 @@
   <ng-container *ngIf="rows.length > 0">
 
     <div class="table-toolbar">
-      <div class="record-count">
-        Showing
-        <strong>{{ showingFrom }}</strong>
-        to
-        <strong>{{ showingTo }}</strong>
-        of
-        <strong>{{ totalRows }}</strong>
-        records
+      <div class="filter-left">
+
+        <div class="search-box" *ngIf="searchable">
+          <span>🔎</span>
+          <input
+            type="text"
+            [(ngModel)]="searchText"
+            (ngModelChange)="onSearchChange()"
+            [placeholder]="searchPlaceholder"
+          >
+        </div>
+
+        <label class="filter-control" *ngIf="enableStatusFilter">
+          {{ statusFilterLabel }}
+          <select
+            [(ngModel)]="selectedStatus"
+            (ngModelChange)="onStatusChange()"
+          >
+            <option value="">All</option>
+            <option *ngFor="let status of statusOptions" [value]="status">
+              {{ status.replaceAll('_', ' ') }}
+            </option>
+          </select>
+        </label>
+
+        <ng-container *ngIf="enableDateFilter">
+          <label class="filter-control">
+            From
+            <input
+              type="date"
+              [(ngModel)]="dateFrom"
+              (ngModelChange)="onDateChange()"
+            >
+          </label>
+
+          <label class="filter-control">
+            To
+            <input
+              type="date"
+              [(ngModel)]="dateTo"
+              (ngModelChange)="onDateChange()"
+            >
+          </label>
+        </ng-container>
+
+        <button
+          type="button"
+          class="clear-filter-btn"
+          *ngIf="hasActiveFilters()"
+          (click)="clearFilters()"
+        >
+          Clear
+        </button>
+
       </div>
 
-      <label class="page-size-control">
-        Rows per page
-        <select [value]="pageSize" (change)="onPageSizeChange($event)">
-          <option
-            *ngFor="let option of pageSizeOptions"
-            [value]="option"
-          >
-            {{ option }}
-          </option>
-        </select>
-      </label>
+      <div class="filter-right">
+        <div class="record-count">
+          Showing
+          <strong>{{ showingFrom }}</strong>
+          to
+          <strong>{{ showingTo }}</strong>
+          of
+          <strong>{{ totalRows }}</strong>
+          records
+        </div>
+
+        <label class="page-size-control">
+          Rows per page
+          <select [value]="pageSize" (change)="onPageSizeChange($event)">
+            <option
+              *ngFor="let option of pageSizeOptions"
+              [value]="option"
+            >
+              {{ option }}
+            </option>
+          </select>
+        </label>
+      </div>
     </div>
 
     <div

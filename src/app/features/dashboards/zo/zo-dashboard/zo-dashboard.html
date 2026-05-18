@@ -142,6 +142,9 @@
           [columns]="teamUserColumns"
           [rows]="teamRmUsers"
           [pageSize]="10"
+          searchPlaceholder="Search team users..."
+          [enableStatusFilter]="true"
+          statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No RM users found under your supervision."
         ></app-data-table-panel>
@@ -153,6 +156,9 @@
           [columns]="teamUserColumns"
           [rows]="teamBmUsers"
           [pageSize]="10"
+          searchPlaceholder="Search team users..."
+          [enableStatusFilter]="true"
+          statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No BM users found under your zone."
         ></app-data-table-panel>
@@ -164,6 +170,9 @@
           [columns]="teamUserColumns"
           [rows]="teamUlUsers"
           [pageSize]="10"
+          searchPlaceholder="Search team users..."
+          [enableStatusFilter]="true"
+          statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No UL users found under your zone."
         ></app-data-table-panel>
@@ -175,6 +184,9 @@
           [columns]="teamUserColumns"
           [rows]="teamIcUsers"
           [pageSize]="10"
+          searchPlaceholder="Search team users..."
+          [enableStatusFilter]="true"
+          statusFilterKey="status"
           maxTableHeight="430px"
           emptyMessage="No IC users found under your zone."
         ></app-data-table-panel>
@@ -265,14 +277,23 @@
 
   </main>
 
-  <app-lead-form-modal
-    [isOpen]="isLeadModalOpen"
-    [selectedLead]="selectedLeadForEdit"
-    [users]="teamIcUsers"
-    assignMode="manual"
-    [readOnly]="isLeadViewMode"
-    (close)="closeLeadModal()"
-    (update)="updateLead($event)"
-  ></app-lead-form-modal>
+  <app-data-table-panel
+    title="Team Lead Records"
+    subtitle="View and update lead records."
+    [columns]="leadColumns"
+    [rows]="teamLeads"
+    [actions]="getLeadActions()"
+    [pageSize]="10"
+    searchPlaceholder="Search leads by customer, NIC, mobile, product..."
+    [enableStatusFilter]="true"
+    statusFilterKey="status"
+    statusFilterLabel="Lead Status"
+    [enableDateFilter]="true"
+    dateFilterKey="createdAt"
+    dateFilterLabel="Created Date"
+    maxTableHeight="480px"
+    emptyMessage="No leads found."
+    (actionClick)="onLeadAction($event)"
+  ></app-data-table-panel>
 
 </div>

@@ -38,6 +38,56 @@
   flex-wrap: wrap;
 }
 
+.filter-left,
+.filter-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.search-box input {
+  border: 0;
+  outline: none;
+  width: 100%;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.filter-control {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.filter-control select,
+.filter-control input {
+  height: 40px;
+  border: 1px solid #dbe3ef;
+  border-radius: 13px;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 0 10px;
+  font-weight: 800;
+  outline: none;
+}
+
+.clear-filter-btn {
+  height: 40px;
+  border: 0;
+  border-radius: 13px;
+  padding: 0 14px;
+  background: #fff1f2;
+  color: #be123c;
+  font-size: 12px;
+  font-weight: 950;
+  cursor: pointer;
+}
+
 .record-count {
   color: #64748b;
   font-size: 13px;
@@ -316,6 +366,22 @@ tbody tr:last-child td {
   }
 
   .pagination-actions button {
+    flex: 1;
+  }
+
+  .filter-left,
+  .filter-right,
+  .search-box {
+    width: 100%;
+  }
+
+  .filter-control {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .filter-control select,
+  .filter-control input {
     flex: 1;
   }
 }
