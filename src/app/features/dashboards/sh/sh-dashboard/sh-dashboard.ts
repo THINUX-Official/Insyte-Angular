@@ -14,7 +14,6 @@ import {DashboardTopbar} from '../../../../shared/components/dashboard/dashboard
 import {ChartPanel} from '../../../../shared/components/dashboard/chart-panel/chart-panel';
 import {DataTablePanel} from '../../../../shared/components/dashboard/data-table-panel/data-table-panel';
 import {AlertsContainer} from '../../../../shared/components/ui/alerts-container/alerts-container';
-import {LeadFormModal} from '../../../../shared/components/business/lead-form-modal/lead-form-modal';
 
 import {
   DashboardSummaryCard,
@@ -22,6 +21,7 @@ import {
   DashboardTableColumn,
   DashboardUserInfo
 } from '../../../../shared/components/models/dashboard-ui.model';
+import {LocationAnalytics} from '../../../../shared/components/dashboard/location-analytics/location-analytics';
 
 interface LoggedUser {
   id?: number;
@@ -60,7 +60,7 @@ interface MenuItem {
     ChartPanel,
     DataTablePanel,
     AlertsContainer,
-    LeadFormModal
+    LocationAnalytics
   ],
   templateUrl: './sh-dashboard.html',
   styleUrls: ['./sh-dashboard.scss']

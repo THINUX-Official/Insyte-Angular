@@ -23,6 +23,7 @@ import {UserFormModal} from '../components/user-form-modal/user-form-modal';
 import {AlertsContainer} from '../../../../shared/components/ui/alerts-container/alerts-container';
 import {AlertsService} from '../../../../core/services/alerts.service';
 import {LeadFormModal} from '../../../../shared/components/business/lead-form-modal/lead-form-modal';
+import {LocationAnalytics} from '../../../../shared/components/dashboard/location-analytics/location-analytics';
 
 interface LoggedUser {
   id?: number;
@@ -60,7 +61,8 @@ interface MenuItem {
     DataTablePanel,
     UserFormModal,
     AlertsContainer,
-    LeadFormModal
+    LeadFormModal,
+    LocationAnalytics
   ],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],

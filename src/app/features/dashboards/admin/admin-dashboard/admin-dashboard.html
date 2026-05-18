@@ -159,6 +159,7 @@
       </section>
 
       <!-- AI ANALYTICS -->
+      <!-- AI ANALYTICS -->
       <section *ngIf="activeSection === 'ai'" class="dashboard-section">
 
         <div class="section-title">
@@ -191,6 +192,13 @@
           [rows]="getTopPerformers()"
           emptyMessage="No performance records found."
         ></app-data-table-panel>
+
+        <app-location-analytics
+          [year]="2026"
+          [month]="5"
+          [limit]="5"
+          [showGenerateButton]="true">
+        </app-location-analytics>
 
       </section>
 

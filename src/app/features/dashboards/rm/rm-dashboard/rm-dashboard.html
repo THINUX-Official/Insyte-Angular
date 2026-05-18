@@ -227,6 +227,11 @@
           emptyMessage="No performance records found."
         ></app-data-table-panel>
 
+        <app-location-analytics
+          [year]="2026"
+          [month]="5"
+          [limit]="5">
+        </app-location-analytics>
       </section>
 
       <!-- RECOMMENDATIONS -->
@@ -248,28 +253,6 @@
         ></app-data-table-panel>
 
       </section>
-
     </ng-container>
-
   </main>
-
-  <app-data-table-panel
-    title="Team Lead Records"
-    subtitle="View and update lead records."
-    [columns]="leadColumns"
-    [rows]="teamLeads"
-    [actions]="getLeadActions()"
-    [pageSize]="10"
-    searchPlaceholder="Search leads by customer, NIC, mobile, product..."
-    [enableStatusFilter]="true"
-    statusFilterKey="status"
-    statusFilterLabel="Lead Status"
-    [enableDateFilter]="true"
-    dateFilterKey="createdAt"
-    dateFilterLabel="Created Date"
-    maxTableHeight="480px"
-    emptyMessage="No leads found."
-    (actionClick)="onLeadAction($event)"
-  ></app-data-table-panel>
-
 </div>

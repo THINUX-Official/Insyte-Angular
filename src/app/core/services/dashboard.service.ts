@@ -22,6 +22,20 @@ export interface ChatbotResponse {
   matchedKeywords?: string;
 }
 
+export interface LocationPerformance {
+  id?: number;
+  province: string;
+  district: string;
+  performanceYear: number;
+  performanceMonth: number;
+  totalLeads: number;
+  convertedLeads: number;
+  totalPremium: number;
+  conversionRate: number;
+  averagePremium: number;
+  performanceCategory: 'HIGH' | 'MEDIUM' | 'LOW';
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -29,6 +43,39 @@ export class DashboardService {
   private readonly apiUrl = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {
+  }
+
+  getMyTeamLocationPerformance(year: number, month: number): Observable<LocationPerformance[]> {
+    return this.http
+      .get<StandardResponse<LocationPerformance[]>>(
+        `${this.apiUrl}/location-performance/my-team/month?year=${year}&month=${month}`
+      )
+      .pipe(map(response => response.data || []));
+  }
+
+  getMyTeamTopLocations(year: number, month: number, limit: number = 5): Observable<LocationPerformance[]> {
+    return this.http
+      .get<StandardResponse<LocationPerformance[]>>(
+        `${this.apiUrl}/location-performance/my-team/top?year=${year}&month=${month}&limit=${limit}`
+      )
+      .pipe(map(response => response.data || []));
+  }
+
+  getMyTeamBottomLocations(year: number, month: number, limit: number = 5): Observable<LocationPerformance[]> {
+    return this.http
+      .get<StandardResponse<LocationPerformance[]>>(
+        `${this.apiUrl}/location-performance/my-team/bottom?year=${year}&month=${month}&limit=${limit}`
+      )
+      .pipe(map(response => response.data || []));
+  }
+
+  generateLocationPerformance(year: number, month: number): Observable<LocationPerformance[]> {
+    return this.http
+      .post<StandardResponse<LocationPerformance[]>>(
+        `${this.apiUrl}/location-performance/generate?year=${year}&month=${month}`,
+        {}
+      )
+      .pipe(map(response => response.data || []));
   }
 
   askChatbot(message: string): Observable<ChatbotResponse> {
