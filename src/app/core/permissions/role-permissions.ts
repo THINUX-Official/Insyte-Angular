@@ -58,10 +58,10 @@ export const RolePermissions: Record<string, AppPermission[]> = {
   ],
 
   UL: [
+    AppPermissions.DASHBOARD_TEAM_VIEW,
+    AppPermissions.USER_VIEW,
     AppPermissions.LEAD_VIEW,
     AppPermissions.LEAD_UPDATE,
-    AppPermissions.DASHBOARD_TEAM_VIEW,
-    AppPermissions.FRAUD_VIEW,
     AppPermissions.RECOMMENDATION_VIEW
   ],
 
