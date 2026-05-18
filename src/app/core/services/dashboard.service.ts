@@ -11,6 +11,17 @@ interface StandardResponse<T> {
   data: T;
 }
 
+export interface ChatbotRequest {
+  message: string;
+}
+
+export interface ChatbotResponse {
+  reply: string;
+  confidenceScore: number;
+  matchedQuestion?: string;
+  matchedKeywords?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -18,6 +29,12 @@ export class DashboardService {
   private readonly apiUrl = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {
+  }
+
+  askChatbot(message: string): Observable<ChatbotResponse> {
+    return this.http
+      .post<StandardResponse<ChatbotResponse>>(`${this.apiUrl}/chatbot/ask`, {message})
+      .pipe(map(response => response.data));
   }
 
   createUser(payload: any) {
