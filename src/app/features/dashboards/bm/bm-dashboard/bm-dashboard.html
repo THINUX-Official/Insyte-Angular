@@ -1,1 +1,238 @@
-<p>bm-dashboard works!</p>
+<div class="bm-shell">
+
+  <app-dashboard-sidebar
+    title="Insyte"
+    subtitle="Branch Manager Console"
+    logoText="BM"
+    theme="team"
+    [menuItems]="getVisibleMenuItems()"
+    [activeSection]="activeSection"
+    [userInfo]="sidebarUserInfo"
+    (sectionChange)="setActiveSection($event)"
+  ></app-dashboard-sidebar>
+
+  <main class="bm-main">
+
+    <app-dashboard-topbar
+      pageLabel="Branch Manager Dashboard"
+      [title]="'Welcome back, ' + displayName"
+      [subtitle]="loggedUser?.email || 'branch manager email not available'"
+      theme="team"
+      [userInfo]="sidebarUserInfo"
+      [showRefresh]="false"
+      [showPipeline]="false"
+      (logoutClick)="logout()"
+    ></app-dashboard-topbar>
+
+    <app-alerts-container></app-alerts-container>
+
+    <div class="loader-card" *ngIf="isLoading">
+      Loading BM dashboard data...
+    </div>
+
+    <ng-container *ngIf="!isLoading">
+
+      <!-- OVERVIEW -->
+      <section *ngIf="activeSection === 'overview'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>Branch Overview</h2>
+          <p>Summary of UL team members, IC team members, leads and branch performance.</p>
+        </div>
+
+        <section class="summary-grid">
+          <app-summary-card
+            *ngFor="let card of summaryCards"
+            [card]="card"
+          ></app-summary-card>
+        </section>
+
+        <section class="mini-grid">
+          <article>
+            <span>Active Leads</span>
+            <strong>{{ getActiveLeadCount() }}</strong>
+          </article>
+
+          <article>
+            <span>Cancelled Leads</span>
+            <strong>{{ getCancelledLeadCount() }}</strong>
+          </article>
+
+          <article>
+            <span>Recommendations</span>
+            <strong>{{ teamRecommendations.length }}</strong>
+          </article>
+
+          <article>
+            <span>Predictions</span>
+            <strong>{{ teamPredictions.length }}</strong>
+          </article>
+        </section>
+
+        <section class="chart-grid two">
+          <app-chart-panel
+            [chartOptions]="leadStatusChartOption"
+            title="Branch Lead Status"
+            subtitle="Lead distribution across IC users under your UL team."
+            [hasData]="teamLeads.length > 0"
+            emptyMessage="No branch leads available."
+          ></app-chart-panel>
+
+          <app-chart-panel
+            [chartOptions]="teamPerformanceChartOption"
+            title="Branch IC Performance"
+            subtitle="Top performance scores under your branch."
+            [hasData]="teamPerformance.length > 0"
+            emptyMessage="No branch performance records available."
+          ></app-chart-panel>
+        </section>
+
+      </section>
+
+      <!-- TEAM -->
+      <section *ngIf="activeSection === 'team'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>My Team</h2>
+          <p>View Unit Leaders and Insurance Consultants under your branch hierarchy.</p>
+        </div>
+
+        <div class="team-tabs">
+          <button
+            type="button"
+            [class.active]="activeTeamTab === 'ul'"
+            (click)="setTeamTab('ul')"
+          >
+            UL Team
+            <span>{{ teamUlUsers.length }}</span>
+          </button>
+
+          <button
+            type="button"
+            [class.active]="activeTeamTab === 'ic'"
+            (click)="setTeamTab('ic')"
+          >
+            IC Team
+            <span>{{ teamIcUsers.length }}</span>
+          </button>
+        </div>
+
+        <app-data-table-panel
+          *ngIf="activeTeamTab === 'ul'"
+          title="UL Team Members"
+          subtitle="Unit Leaders reporting directly to this Branch Manager."
+          [columns]="teamUserColumns"
+          [rows]="teamUlUsers"
+          [pageSize]="10"
+          maxTableHeight="430px"
+          emptyMessage="No UL users found under your supervision."
+        ></app-data-table-panel>
+
+        <app-data-table-panel
+          *ngIf="activeTeamTab === 'ic'"
+          title="IC Team Members"
+          subtitle="Insurance Consultants under your UL team."
+          [columns]="teamUserColumns"
+          [rows]="teamIcUsers"
+          [pageSize]="10"
+          maxTableHeight="430px"
+          emptyMessage="No IC users found under your team."
+        ></app-data-table-panel>
+
+      </section>
+
+      <!-- LEADS -->
+      <section *ngIf="activeSection === 'leads'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>Team Leads</h2>
+          <p>Lead records assigned to IC users under your branch hierarchy.</p>
+        </div>
+
+        <app-data-table-panel
+          title="Branch Lead Records"
+          subtitle="View and update leads handled by IC users under your UL team."
+          [columns]="leadColumns"
+          [rows]="teamLeads"
+          [actions]="getLeadActions()"
+          [pageSize]="10"
+          maxTableHeight="480px"
+          emptyMessage="No branch leads found."
+          (actionClick)="onLeadAction($event)"
+        ></app-data-table-panel>
+
+      </section>
+
+      <!-- PERFORMANCE -->
+      <section *ngIf="activeSection === 'performance'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>Team Performance</h2>
+          <p>Monthly performance and target achievement of IC users under your branch.</p>
+        </div>
+
+        <section class="chart-grid two">
+          <app-chart-panel
+            [chartOptions]="teamPerformanceChartOption"
+            title="Branch IC Performance"
+            subtitle="Performance score comparison."
+            [hasData]="teamPerformance.length > 0"
+            emptyMessage="No performance records available."
+          ></app-chart-panel>
+
+          <app-chart-panel
+            [chartOptions]="predictionChartOption"
+            title="Branch Prediction Risk"
+            subtitle="AI prediction risk distribution."
+            [hasData]="teamPredictions.length > 0"
+            emptyMessage="No prediction records available."
+          ></app-chart-panel>
+        </section>
+
+        <app-data-table-panel
+          title="Branch Performance Records"
+          subtitle="Monthly IC performance records under your branch."
+          [columns]="performanceColumns"
+          [rows]="teamPerformance"
+          [pageSize]="10"
+          maxTableHeight="430px"
+          emptyMessage="No performance records found."
+        ></app-data-table-panel>
+
+      </section>
+
+      <!-- RECOMMENDATIONS -->
+      <section *ngIf="activeSection === 'recommendations'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>Branch Recommendations</h2>
+          <p>AI-generated recommendations for IC users under your branch hierarchy.</p>
+        </div>
+
+        <app-data-table-panel
+          title="Branch Recommendations"
+          subtitle="Recommendations generated for branch improvement."
+          [columns]="recommendationColumns"
+          [rows]="teamRecommendations"
+          [pageSize]="10"
+          maxTableHeight="430px"
+          emptyMessage="No recommendations found for your branch."
+        ></app-data-table-panel>
+
+      </section>
+
+    </ng-container>
+
+  </main>
+
+  <app-lead-form-modal
+    [isOpen]="isLeadModalOpen"
+    [selectedLead]="selectedLeadForEdit"
+    [users]="teamIcUsers"
+    assignMode="manual"
+    [readOnly]="isLeadViewMode"
+    (close)="closeLeadModal()"
+    (update)="updateLead($event)"
+  ></app-lead-form-modal>
+
+</div>
