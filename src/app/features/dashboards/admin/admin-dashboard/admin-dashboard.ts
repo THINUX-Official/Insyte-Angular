@@ -22,6 +22,7 @@ import {
 import {UserFormModal} from '../components/user-form-modal/user-form-modal';
 import {AlertsContainer} from '../../../../shared/components/ui/alerts-container/alerts-container';
 import {AlertsService} from '../../../../core/services/alerts.service';
+import {LeadFormModal} from '../../../../shared/components/business/lead-form-modal/lead-form-modal';
 
 interface LoggedUser {
   id?: number;
@@ -58,12 +59,17 @@ interface MenuItem {
     ChartPanel,
     DataTablePanel,
     UserFormModal,
-    AlertsContainer
+    AlertsContainer,
+    LeadFormModal
   ],
   templateUrl: './admin-dashboard.html',
   styleUrls: ['./admin-dashboard.scss'],
 })
 export class AdminDashboard implements OnInit {
+
+  isLeadModalOpen = false;
+  selectedLeadForEdit: any | null = null;
+  isLeadViewMode = false;
 
   selectedUserForEdit: any | null = null;
 
@@ -459,14 +465,32 @@ export class AdminDashboard implements OnInit {
 
     if (this.can(this.permissions.LEAD_DELETE)) {
       actions.push({
-        label: 'Delete',
-        icon: '🗑️',
+        label: 'Cancel',
+        icon: '🚫',
         tone: 'danger',
-        action: 'delete'
+        action: 'cancel'
       });
     }
 
     return actions;
+  }
+
+  openViewLeadModal(lead: any): void {
+    this.selectedLeadForEdit = lead;
+    this.isLeadViewMode = true;
+    this.isLeadModalOpen = true;
+  }
+
+  openEditLeadModal(lead: any): void {
+    this.selectedLeadForEdit = lead;
+    this.isLeadViewMode = false;
+    this.isLeadModalOpen = true;
+  }
+
+  closeLeadModal(): void {
+    this.isLeadModalOpen = false;
+    this.selectedLeadForEdit = null;
+    this.isLeadViewMode = false;
   }
 
   getFraudActions(): DashboardTableAction[] {
@@ -506,7 +530,124 @@ export class AdminDashboard implements OnInit {
   }
 
   onLeadAction(event: { action: string; row: any }): void {
+    if (event.action === 'view') {
+      this.openViewLeadModal(event.row);
+      return;
+    }
+
+    if (event.action === 'edit') {
+      this.openEditLeadModal(event.row);
+      return;
+    }
+
+    if (event.action === 'cancel') {
+      this.cancelLead(event.row);
+      return;
+    }
+
     console.log('Lead action:', event.action, event.row);
+  }
+
+  updateLead(event: { id: number; payload: any }): void {
+    this.dashboardService.updateLead(event.id, event.payload).subscribe({
+      next: () => {
+        this.loadDashboardData(false);
+
+        setTimeout(() => {
+          this.alerts.successDialog(
+            'Lead has been updated successfully.',
+            'Lead Updated'
+          );
+        }, 100);
+      },
+      error: (error) => {
+        console.error('Lead update failed', error);
+
+        this.alerts.errorDialog(
+          'Lead update failed. Please check the entered details and try again.',
+          'Lead Update Failed'
+        );
+      }
+    });
+  }
+
+  cancelLead(lead: any): void {
+    if (!lead?.id) {
+      this.alerts.errorDialog('Selected lead ID is missing.', 'Cancel Failed');
+      return;
+    }
+
+    if (lead.status === 'CANCELLED') {
+      this.alerts.infoDialog('This lead is already cancelled.', 'Already Cancelled');
+      return;
+    }
+
+    this.alerts.confirm({
+      type: 'danger',
+      title: 'Cancel Lead?',
+      message: `Do you want to cancel lead "${lead.name || lead.customerName || lead.id}"?`,
+      confirmText: 'Yes, Cancel Lead',
+      cancelText: 'No'
+    }).subscribe(confirmed => {
+      if (!confirmed) {
+        return;
+      }
+
+      const payload = this.buildLeadPayloadFromRow(lead, 'CANCELLED');
+
+      this.dashboardService.updateLead(Number(lead.id), payload).subscribe({
+        next: () => {
+          this.loadDashboardData(false);
+
+          setTimeout(() => {
+            this.alerts.successDialog(
+              'Lead has been cancelled successfully.',
+              'Lead Cancelled'
+            );
+          }, 100);
+        },
+        error: (error) => {
+          console.error('Lead cancel failed', error);
+
+          this.alerts.errorDialog(
+            'Lead cancel failed. Please try again.',
+            'Lead Cancel Failed'
+          );
+        }
+      });
+    });
+  }
+
+  private buildLeadPayloadFromRow(lead: any, statusOverride?: string): any {
+    return {
+      status: statusOverride || lead.status || 'NEW',
+      name: lead.name || lead.customerName || '',
+      nic: lead.nic || '',
+      email: lead.email || null,
+      gender: lead.gender || null,
+      civilStatus: lead.civilStatus || null,
+      dob: lead.dob || null,
+      mobile: lead.mobile || null,
+      occupationId: lead.occupationId || null,
+      race: lead.race || null,
+
+      address1: lead.address1 || null,
+      address2: lead.address2 || null,
+      city: lead.city || null,
+      district: lead.district || null,
+      province: lead.province || null,
+      country: lead.country || null,
+
+      premium: lead.premium ?? lead.expectedPremium ?? null,
+      productType: lead.productType || null,
+      leadSource: lead.leadSource || null,
+      probability: lead.probability || null,
+      remindDate: lead.remindDate || null,
+      remark: lead.remark || null,
+      attachmentPath: lead.attachmentPath || null,
+
+      assignedUserId: lead.assignedUserId || lead.agentId || lead.userId
+    };
   }
 
   onFraudAction(event: { action: string; row: any }): void {

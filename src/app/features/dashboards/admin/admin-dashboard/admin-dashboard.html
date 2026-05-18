@@ -272,10 +272,21 @@
 
   <app-user-form-modal
     [isOpen]="isUserModalOpen"
+    assignMode="manual"
     [users]="users"
     [selectedUser]="selectedUserForEdit"
     (close)="closeUserModal()"
     (save)="createUser($event)"
     (update)="updateUser($event)"
   ></app-user-form-modal>
+
+  <app-lead-form-modal
+    [isOpen]="isLeadModalOpen"
+    [selectedLead]="selectedLeadForEdit"
+    [users]="users"
+    assignMode="manual"
+    [readOnly]="isLeadViewMode"
+    (close)="closeLeadModal()"
+    (update)="updateLead($event)"
+  ></app-lead-form-modal>
 </div>

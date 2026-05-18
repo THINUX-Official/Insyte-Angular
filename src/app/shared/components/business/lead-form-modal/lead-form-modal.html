@@ -26,6 +26,7 @@
               type="text"
               [(ngModel)]="form.name"
               name="name"
+              [disabled]="readOnly"
               [class.invalid]="isInvalidName()"
               placeholder="Enter customer name"
             >
@@ -38,6 +39,7 @@
               type="text"
               [(ngModel)]="form.nic"
               name="nic"
+              [disabled]="readOnly"
               maxlength="12"
               [class.invalid]="isInvalidNic()"
               placeholder="Enter NIC"
@@ -55,6 +57,7 @@
                 <input
                   type="radio"
                   name="gender"
+                  [disabled]="readOnly"
                   [value]="option"
                   [(ngModel)]="form.gender"
                 >
@@ -65,7 +68,7 @@
 
           <div class="form-field">
             <label>Civil Status</label>
-            <select [(ngModel)]="form.civilStatus" name="civilStatus">
+            <select [(ngModel)]="form.civilStatus" name="civilStatus" [disabled]="readOnly">
               <option value="">Select civil status</option>
               <option *ngFor="let option of civilStatusOptions" [value]="option">
                 {{ formatLabel(option) }}
@@ -75,12 +78,12 @@
 
           <div class="form-field">
             <label>Date of Birth</label>
-            <input type="date" [(ngModel)]="form.dob" name="dob">
+            <input type="date" [(ngModel)]="form.dob" name="dob" [disabled]="readOnly">
           </div>
 
           <div class="form-field">
             <label>Race</label>
-            <select [(ngModel)]="form.race" name="race">
+            <select [(ngModel)]="form.race" name="race" [disabled]="readOnly">
               <option value="">Select race</option>
               <option *ngFor="let option of raceOptions" [value]="option">
                 {{ formatLabel(option) }}
@@ -104,6 +107,7 @@
               type="text"
               [(ngModel)]="form.mobile"
               name="mobile"
+              [disabled]="readOnly"
               maxlength="15"
               [class.invalid]="isInvalidMobile()"
               placeholder="Example: 07X XXX XXXX"
@@ -117,6 +121,7 @@
               type="email"
               [(ngModel)]="form.email"
               name="email"
+              [disabled]="readOnly"
               [class.invalid]="isInvalidEmail()"
               placeholder="Enter email"
             >
@@ -125,22 +130,24 @@
 
           <div class="form-field">
             <label>Address Line 1</label>
-            <input type="text" [(ngModel)]="form.address1" name="address1" placeholder="Address line 1">
+            <input type="text" [(ngModel)]="form.address1" name="address1" [disabled]="readOnly"
+                   placeholder="Address line 1">
           </div>
 
           <div class="form-field">
             <label>Address Line 2</label>
-            <input type="text" [(ngModel)]="form.address2" name="address2" placeholder="Address line 2">
+            <input type="text" [(ngModel)]="form.address2" name="address2" [disabled]="readOnly"
+                   placeholder="Address line 2">
           </div>
 
           <div class="form-field">
             <label>City</label>
-            <input type="text" [(ngModel)]="form.city" name="city" placeholder="Enter city">
+            <input type="text" [(ngModel)]="form.city" name="city" [disabled]="readOnly" placeholder="Enter city">
           </div>
 
           <div class="form-field">
             <label>District</label>
-            <select [(ngModel)]="form.district" name="district">
+            <select [(ngModel)]="form.district" name="district" [disabled]="readOnly">
               <option value="">Select district</option>
               <option *ngFor="let option of districtOptions" [value]="option">
                 {{ formatLabel(option) }}
@@ -150,7 +157,7 @@
 
           <div class="form-field">
             <label>Province</label>
-            <select [(ngModel)]="form.province" name="province">
+            <select [(ngModel)]="form.province" name="province" [disabled]="readOnly">
               <option value="">Select province</option>
               <option *ngFor="let option of provinceOptions" [value]="option">
                 {{ formatLabel(option) }}
@@ -160,7 +167,7 @@
 
           <div class="form-field">
             <label>Country</label>
-            <select [(ngModel)]="form.country" name="country">
+            <select [(ngModel)]="form.country" name="country" [disabled]="readOnly">
               <option value="">Select country</option>
               <option *ngFor="let option of countryOptions" [value]="option">
                 {{ formatLabel(option) }}
@@ -183,6 +190,7 @@
             <select
               [(ngModel)]="form.status"
               name="status"
+              [disabled]="readOnly"
               [class.invalid]="isInvalidStatus()"
             >
               <option value="">Select status</option>
@@ -193,9 +201,28 @@
             <small *ngIf="isInvalidStatus()">Status is required.</small>
           </div>
 
+          <div class="form-field" *ngIf="assignMode === 'manual'">
+            <label>Assigned User *</label>
+            <select
+              [(ngModel)]="form.assignedUserId"
+              name="assignedUserId"
+              [disabled]="readOnly"
+              [class.invalid]="submitted && !form.assignedUserId"
+            >
+              <option [ngValue]="null">Select assigned user</option>
+              <option *ngFor="let user of users" [ngValue]="user.id">
+                {{ user.nickname || user.username }} - {{ user.roles?.join(', ') }}
+              </option>
+            </select>
+
+            <small *ngIf="submitted && !form.assignedUserId">
+              Assigned user is required.
+            </small>
+          </div>
+
           <div class="form-field">
             <label>Product Type</label>
-            <select [(ngModel)]="form.productType" name="productType">
+            <select [(ngModel)]="form.productType" name="productType" [disabled]="readOnly">
               <option value="">Select product type</option>
               <option *ngFor="let option of productTypeOptions" [value]="option">
                 {{ formatLabel(option) }}
@@ -211,6 +238,7 @@
               step="0.01"
               [(ngModel)]="form.premium"
               name="premium"
+              [disabled]="readOnly"
               [class.invalid]="isInvalidPremium()"
               placeholder="Enter premium"
             >
@@ -219,7 +247,7 @@
 
           <div class="form-field">
             <label>Lead Source</label>
-            <select [(ngModel)]="form.leadSource" name="leadSource">
+            <select [(ngModel)]="form.leadSource" name="leadSource" [disabled]="readOnly">
               <option value="">Select lead source</option>
               <option *ngFor="let option of leadSourceOptions" [value]="option">
                 {{ formatLabel(option) }}
@@ -234,6 +262,7 @@
                 <input
                   type="radio"
                   name="probability"
+                  [disabled]="readOnly"
                   [value]="option"
                   [(ngModel)]="form.probability"
                 >
@@ -254,7 +283,7 @@
         <div class="form-grid">
           <div class="form-field">
             <label>Remind Date</label>
-            <input type="date" [(ngModel)]="form.remindDate" name="remindDate">
+            <input type="date" [(ngModel)]="form.remindDate" name="remindDate" [disabled]="readOnly">
           </div>
 
           <div class="form-field">
@@ -263,6 +292,7 @@
               type="text"
               [(ngModel)]="form.attachmentPath"
               name="attachmentPath"
+              [disabled]="readOnly"
               placeholder="Optional attachment path"
             >
           </div>
@@ -272,6 +302,7 @@
             <textarea
               [(ngModel)]="form.remark"
               name="remark"
+              [disabled]="readOnly"
               rows="4"
               placeholder="Enter remark"
             ></textarea>
@@ -281,10 +312,14 @@
 
       <div class="modal-actions">
         <button type="button" class="cancel-btn" (click)="onClose()">
-          Cancel
+          {{ readOnly ? 'Close' : 'Cancel' }}
         </button>
 
-        <button type="submit" class="save-btn">
+        <button
+          type="submit"
+          class="save-btn"
+          *ngIf="!readOnly"
+        >
           {{ isEditMode ? 'Update Lead' : 'Save Lead' }}
         </button>
       </div>

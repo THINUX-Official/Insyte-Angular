@@ -11,9 +11,13 @@ import {AlertsService} from '../../../../core/services/alerts.service';
   styleUrls: ['./lead-form-modal.scss']
 })
 export class LeadFormModal implements OnChanges {
+
   @Input() isOpen = false;
   @Input() selectedLead: any | null = null;
   @Input() loggedUserId: number | null = null;
+  @Input() users: any[] = [];
+  @Input() assignMode: 'self' | 'manual' = 'self';
+  @Input() readOnly = false;
 
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<any>();
@@ -59,6 +63,10 @@ export class LeadFormModal implements OnChanges {
         this.reset();
       }
     }
+  }
+
+  get canEdit(): boolean {
+    return !this.readOnly;
   }
 
   get isEditMode(): boolean {
@@ -186,6 +194,11 @@ export class LeadFormModal implements OnChanges {
   }
 
   isFormValid(): boolean {
+    const assignedUserValid =
+      this.assignMode === 'manual'
+        ? !!this.form.assignedUserId
+        : !!this.loggedUserId;
+
     return (
       !!this.form.status &&
       !!this.form.name.trim() &&
@@ -194,16 +207,28 @@ export class LeadFormModal implements OnChanges {
       !this.isInvalidEmail() &&
       !this.isInvalidMobile() &&
       !this.isInvalidPremium() &&
-      !!this.loggedUserId
+      assignedUserValid
     );
   }
 
   submit(): void {
+    if (this.readOnly) {
+      return;
+    }
+
     this.submitted = true;
 
-    if (!this.loggedUserId) {
+    if (this.assignMode === 'self' && !this.loggedUserId) {
       this.alerts.errorDialog(
         'Logged user details are missing. Please login again.',
+        'Lead Save Failed'
+      );
+      return;
+    }
+
+    if (this.assignMode === 'manual' && !this.form.assignedUserId) {
+      this.alerts.errorDialog(
+        'Please select an assigned user for this lead.',
         'Lead Save Failed'
       );
       return;
@@ -272,7 +297,9 @@ export class LeadFormModal implements OnChanges {
       remark: this.emptyToNull(this.form.remark),
       attachmentPath: this.emptyToNull(this.form.attachmentPath),
 
-      assignedUserId: Number(this.loggedUserId)
+      assignedUserId: this.assignMode === 'manual'
+        ? Number(this.form.assignedUserId)
+        : Number(this.loggedUserId)
     };
   }
 
@@ -299,7 +326,9 @@ export class LeadFormModal implements OnChanges {
 
   reset(): void {
     this.form = this.getEmptyForm();
-    this.form.assignedUserId = this.loggedUserId;
+    this.form.assignedUserId = this.assignMode === 'self'
+      ? this.loggedUserId
+      : null;
     this.submitted = false;
   }
 

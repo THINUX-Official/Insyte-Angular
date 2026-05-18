@@ -192,6 +192,7 @@
     [isOpen]="isLeadModalOpen"
     [selectedLead]="selectedLeadForEdit"
     [loggedUserId]="loggedUser?.id || null"
+    assignMode="self"
     (close)="closeLeadModal()"
     (save)="createLead($event)"
     (update)="updateLead($event)"
