@@ -1,7 +1,8 @@
-import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {AlertsService} from '../../../../core/services/alerts.service';
+import {OccupationOption, OccupationService} from '../../../../core/services/occupation.service';
 
 @Component({
   selector: 'app-lead-form-modal',
@@ -10,7 +11,7 @@ import {AlertsService} from '../../../../core/services/alerts.service';
   templateUrl: './lead-form-modal.html',
   styleUrls: ['./lead-form-modal.scss']
 })
-export class LeadFormModal implements OnChanges {
+export class LeadFormModal implements OnChanges, OnInit {
 
   @Input() isOpen = false;
   @Input() selectedLead: any | null = null;
@@ -24,6 +25,9 @@ export class LeadFormModal implements OnChanges {
   @Output() update = new EventEmitter<{ id: number; payload: any }>();
 
   submitted = false;
+
+  occupationOptions: OccupationOption[] = [];
+  isOccupationLoading = false;
 
   leadStatusOptions = ['NEW', 'IN_PROGRESS', 'QUOTATION_SUBMITTED', 'COMPLETED', 'ON_HOLD', 'CANCELLED'];
   genderOptions = ['MALE', 'FEMALE', 'OTHER'];
@@ -50,11 +54,22 @@ export class LeadFormModal implements OnChanges {
 
   form = this.getEmptyForm();
 
-  constructor(private alerts: AlertsService) {
+  constructor(
+    private alerts: AlertsService,
+    private occupationService: OccupationService
+  ) {
+  }
+
+  ngOnInit(): void {
+    this.loadOccupations();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen'] || changes['selectedLead']) {
+      if (this.isOpen && !this.occupationOptions.length) {
+        this.loadOccupations();
+      }
+
       if (this.isOpen && this.selectedLead) {
         this.patchForm(this.selectedLead);
       }
@@ -81,6 +96,30 @@ export class LeadFormModal implements OnChanges {
     return this.isEditMode
       ? 'Update customer lead details and follow-up information.'
       : 'Create a new insurance lead assigned to your profile.';
+  }
+
+  private loadOccupations(): void {
+    if (this.isOccupationLoading) {
+      return;
+    }
+
+    this.isOccupationLoading = true;
+
+    this.occupationService.getOccupations().subscribe({
+      next: (occupations) => {
+        this.occupationOptions = occupations || [];
+        this.isOccupationLoading = false;
+      },
+      error: (error) => {
+        console.error('Occupation load failed', error);
+        this.isOccupationLoading = false;
+
+        this.alerts.errorDialog(
+          'Occupation list could not be loaded. Please check backend API.',
+          'Occupation Load Failed'
+        );
+      }
+    });
   }
 
   private getEmptyForm() {
@@ -125,7 +164,11 @@ export class LeadFormModal implements OnChanges {
       civilStatus: lead.civilStatus || '',
       dob: this.toDateInputValue(lead.dob),
       mobile: lead.mobile || '',
-      occupationId: lead.occupationId || null,
+      occupationId: lead.occupationId
+        ? Number(lead.occupationId)
+        : lead.occupation?.id
+          ? Number(lead.occupation.id)
+          : null,
       race: lead.race || '',
 
       address1: lead.address1 || '',

@@ -82,6 +82,23 @@
           </div>
 
           <div class="form-field">
+            <label>Occupation</label>
+            <select
+              [(ngModel)]="form.occupationId"
+              name="occupationId"
+              [disabled]="readOnly || isOccupationLoading"
+            >
+              <option [ngValue]="null">
+                {{ isOccupationLoading ? 'Loading occupations...' : 'Select occupation' }}
+              </option>
+
+              <option *ngFor="let occupation of occupationOptions" [ngValue]="occupation.id">
+                {{ occupation.name }} - {{ occupation.code }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-field">
             <label>Race</label>
             <select [(ngModel)]="form.race" name="race" [disabled]="readOnly">
               <option value="">Select race</option>
