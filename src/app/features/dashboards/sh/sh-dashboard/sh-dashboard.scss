@@ -148,6 +148,10 @@
   color: #ffffff;
 }
 
+.inline-loader {
+  margin-bottom: 16px;
+}
+
 @media (max-width: 1360px) {
   .summary-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));

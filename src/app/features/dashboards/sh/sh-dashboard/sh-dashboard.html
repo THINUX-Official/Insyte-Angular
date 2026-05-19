@@ -26,11 +26,11 @@
 
     <app-alerts-container></app-alerts-container>
 
-    <div class="loader-card" *ngIf="isLoading">
+    <div class="loader-card inline-loader" *ngIf="isLoading">
       Loading SH dashboard data...
     </div>
 
-    <ng-container *ngIf="!isLoading">
+    <ng-container>
 
       <!-- OVERVIEW -->
       <section *ngIf="activeSection === 'overview'" class="dashboard-section">

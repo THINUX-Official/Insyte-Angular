@@ -29,11 +29,11 @@
 
     <app-alerts-container></app-alerts-container>
 
-    <div class="loader-card" *ngIf="isLoading">
+    <div class="loader-card inline-loader" *ngIf="isLoading">
       Loading dashboard data...
     </div>
 
-    <ng-container *ngIf="!isLoading">
+    <ng-container>
 
       <!-- OVERVIEW -->
       <section *ngIf="activeSection === 'overview'" class="dashboard-section">
@@ -163,7 +163,6 @@
       </section>
 
       <!-- AI ANALYTICS -->
-      <!-- AI ANALYTICS -->
       <section *ngIf="activeSection === 'ai'" class="dashboard-section">
 
         <div class="section-title">
@@ -280,6 +279,8 @@
           [columns]="mlExperimentColumns"
           [rows]="mlExperiments"
           emptyMessage="No ML experiment records found."
+          [enableExport]="true"
+          exportFileName="admin-ml-experiments-report"
         ></app-data-table-panel>
 
       </section>

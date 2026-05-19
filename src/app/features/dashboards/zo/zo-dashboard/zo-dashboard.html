@@ -26,11 +26,11 @@
 
     <app-alerts-container></app-alerts-container>
 
-    <div class="loader-card" *ngIf="isLoading">
+    <div class="loader-card inline-loader" *ngIf="isLoading">
       Loading ZO dashboard data...
     </div>
 
-    <ng-container *ngIf="!isLoading">
+    <ng-container>
 
       <!-- OVERVIEW -->
       <section *ngIf="activeSection === 'overview'" class="dashboard-section">
@@ -262,9 +262,8 @@
           emptyMessage="No performance records found."
           [enableExport]="true"
           exportFileName="zo-ic_performance-report"
-        >
+        ></app-data-table-panel>
 
-        </app-data-table-panel>
         <app-location-analytics
           [limit]="5"
           [month]="5"

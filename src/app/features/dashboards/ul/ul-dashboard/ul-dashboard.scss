@@ -95,6 +95,10 @@
   box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
 }
 
+.inline-loader {
+  margin-bottom: 16px;
+}
+
 @media (max-width: 1180px) {
   .ul-shell {
     grid-template-columns: 1fr;

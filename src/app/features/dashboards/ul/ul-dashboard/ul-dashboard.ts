@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {forkJoin} from 'rxjs';
 import {EChartsCoreOption} from 'echarts/core';
@@ -186,13 +186,23 @@ export class UlDashboard implements OnInit {
   constructor(
     private dashboardService: DashboardService,
     private authService: AuthService,
-    private alerts: AlertsService
+    private alerts: AlertsService,
+    private cdr: ChangeDetectorRef
   ) {
   }
 
   ngOnInit(): void {
+    this.activeSection = 'overview';
+
     this.setDefaultSectionByPermission();
-    this.loadLoggedUser();
+    this.initializeSummaryCards();
+    this.buildCharts();
+
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      this.loadLoggedUser();
+    }, 0);
   }
 
   get sidebarUserInfo(): DashboardUserInfo {
@@ -225,6 +235,12 @@ export class UlDashboard implements OnInit {
 
     if (selectedItem && this.can(selectedItem.permission)) {
       this.activeSection = section;
+
+      this.cdr.detectChanges();
+
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 100);
     }
   }
 
@@ -234,6 +250,7 @@ export class UlDashboard implements OnInit {
     }
 
     this.errorMessage = '';
+    this.cdr.detectChanges();
 
     forkJoin({
       users: this.dashboardService.getUsers(),
@@ -254,10 +271,19 @@ export class UlDashboard implements OnInit {
         this.buildCharts();
 
         this.isLoading = false;
+
+        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          window.dispatchEvent(new Event('resize'));
+        }, 100);
       },
       error: (error) => {
         console.error('UL dashboard load failed', error);
+
         this.isLoading = false;
+
+        this.cdr.detectChanges();
 
         this.alerts.errorDialog(
           'UL dashboard data load failed. Please check backend API and server.',
@@ -385,10 +411,16 @@ export class UlDashboard implements OnInit {
   }
 
   private setDefaultSectionByPermission(): void {
-    const firstVisibleItem = this.getVisibleMenuItems()[0];
+    const visibleItems = this.getVisibleMenuItems();
 
-    if (firstVisibleItem) {
-      this.activeSection = firstVisibleItem.key;
+    if (!visibleItems.length) {
+      return;
+    }
+
+    const currentSectionVisible = visibleItems.some(item => item.key === this.activeSection);
+
+    if (!currentSectionVisible) {
+      this.activeSection = visibleItems[0].key;
     }
   }
 
@@ -409,6 +441,8 @@ export class UlDashboard implements OnInit {
         'Logged user username is missing. Please login again.',
         'User Details Missing'
       );
+
+      this.cdr.detectChanges();
       return;
     }
 
@@ -417,6 +451,8 @@ export class UlDashboard implements OnInit {
       username,
       roles: storedUser?.roles || roles
     };
+
+    this.cdr.detectChanges();
 
     this.dashboardService.getUserByUsername(username).subscribe({
       next: (response) => {
@@ -433,7 +469,9 @@ export class UlDashboard implements OnInit {
           supervisorUsername: user.supervisorUsername
         };
 
-        this.loadDashboardData();
+        setTimeout(() => {
+          this.loadDashboardData();
+        }, 0);
       },
       error: (error) => {
         console.error('UL logged user fetch failed', error);
@@ -442,6 +480,8 @@ export class UlDashboard implements OnInit {
           'Logged user details could not be loaded. Please login again.',
           'User Details Missing'
         );
+
+        this.cdr.detectChanges();
       }
     });
   }
@@ -471,6 +511,41 @@ export class UlDashboard implements OnInit {
     this.teamRecommendations = this.recommendations.filter(item =>
       this.teamUserIds.includes(Number(item.agentId || item.userId))
     );
+  }
+
+  private initializeSummaryCards(): void {
+    this.summaryCards = [
+      {
+        title: 'IC Team Members',
+        value: 0,
+        icon: '👥',
+        tone: 'blue'
+      },
+      {
+        title: 'Team Leads',
+        value: 0,
+        icon: '📋',
+        tone: 'green'
+      },
+      {
+        title: 'Active Leads',
+        value: 0,
+        icon: '⚡',
+        tone: 'orange'
+      },
+      {
+        title: 'Completed Leads',
+        value: 0,
+        icon: '✅',
+        tone: 'purple'
+      },
+      {
+        title: 'Average Score',
+        value: '0.00',
+        icon: '🏆',
+        tone: 'dark'
+      }
+    ];
   }
 
   private updateSummaryCards(): void {

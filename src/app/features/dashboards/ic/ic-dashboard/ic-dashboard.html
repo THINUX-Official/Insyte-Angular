@@ -30,11 +30,11 @@
       {{ errorMessage }}
     </div>
 
-    <div class="loader-card" *ngIf="isLoading">
+    <div class="loader-card inline-loader" *ngIf="isLoading">
       Loading IC dashboard data...
     </div>
 
-    <ng-container *ngIf="!isLoading">
+    <ng-container>
 
       <!-- OVERVIEW -->
       <section *ngIf="activeSection === 'overview'" class="dashboard-section">

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {forkJoin} from 'rxjs';
 import {EChartsCoreOption} from 'echarts/core';
@@ -153,13 +153,23 @@ export class IcDashboard implements OnInit {
   constructor(
     private dashboardService: DashboardService,
     private authService: AuthService,
-    private alerts: AlertsService
+    private alerts: AlertsService,
+    private cdr: ChangeDetectorRef
   ) {
   }
 
   ngOnInit(): void {
+    this.activeSection = 'overview';
+
     this.setDefaultSectionByPermission();
-    this.loadLoggedUser();
+    this.initializeSummaryCards();
+    this.buildCharts();
+
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      this.loadLoggedUser();
+    }, 0);
   }
 
   get sidebarUserInfo(): DashboardUserInfo {
@@ -189,7 +199,7 @@ export class IcDashboard implements OnInit {
   createLead(payload: any): void {
     this.dashboardService.createLead(payload).subscribe({
       next: () => {
-        this.loadDashboardData();
+        this.loadDashboardData(false);
 
         setTimeout(() => {
           this.alerts.successDialog(
@@ -212,7 +222,7 @@ export class IcDashboard implements OnInit {
   updateLead(event: { id: number; payload: any }): void {
     this.dashboardService.updateLead(event.id, event.payload).subscribe({
       next: () => {
-        this.loadDashboardData();
+        this.loadDashboardData(false);
 
         setTimeout(() => {
           this.alerts.successDialog(
@@ -253,12 +263,22 @@ export class IcDashboard implements OnInit {
 
     if (selectedItem && this.can(selectedItem.permission)) {
       this.activeSection = section;
+
+      this.cdr.detectChanges();
+
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 100);
     }
   }
 
-  loadDashboardData(): void {
-    this.isLoading = true;
+  loadDashboardData(showLoader: boolean = true): void {
+    if (showLoader) {
+      this.isLoading = true;
+    }
+
     this.errorMessage = '';
+    this.cdr.detectChanges();
 
     forkJoin({
       users: this.dashboardService.getUsers(),
@@ -279,11 +299,20 @@ export class IcDashboard implements OnInit {
         this.buildCharts();
 
         this.isLoading = false;
+
+        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          window.dispatchEvent(new Event('resize'));
+        }, 100);
       },
       error: (error) => {
         console.error('IC dashboard load failed', error);
+
         this.errorMessage = 'Dashboard data load failed. Please check backend API, CORS, and Spring Boot server.';
         this.isLoading = false;
+
+        this.cdr.detectChanges();
       }
     });
   }
@@ -378,10 +407,16 @@ export class IcDashboard implements OnInit {
   }
 
   private setDefaultSectionByPermission(): void {
-    const firstVisibleItem = this.getVisibleMenuItems()[0];
+    const visibleItems = this.getVisibleMenuItems();
 
-    if (firstVisibleItem) {
-      this.activeSection = firstVisibleItem.key;
+    if (!visibleItems.length) {
+      return;
+    }
+
+    const currentSectionVisible = visibleItems.some(item => item.key === this.activeSection);
+
+    if (!currentSectionVisible) {
+      this.activeSection = visibleItems[0].key;
     }
   }
 
@@ -406,6 +441,8 @@ export class IcDashboard implements OnInit {
         'Logged user username is missing. Please login again.',
         'User Details Missing'
       );
+
+      this.cdr.detectChanges();
       return;
     }
 
@@ -414,6 +451,8 @@ export class IcDashboard implements OnInit {
       username,
       roles: storedUser?.roles || roles
     };
+
+    this.cdr.detectChanges();
 
     this.dashboardService.getUserByUsername(username).subscribe({
       next: (response) => {
@@ -432,7 +471,11 @@ export class IcDashboard implements OnInit {
 
         console.log('Final logged user:', this.loggedUser);
 
-        this.loadDashboardData();
+        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          this.loadDashboardData();
+        }, 0);
       },
       error: (error) => {
         console.error('Logged user fetch failed', error);
@@ -441,6 +484,8 @@ export class IcDashboard implements OnInit {
           'Logged user details could not be loaded. Please login again.',
           'User Details Missing'
         );
+
+        this.cdr.detectChanges();
       }
     });
   }
@@ -486,6 +531,35 @@ export class IcDashboard implements OnInit {
         this.sameText(item.agentUsername, username)
       );
     });
+  }
+
+  private initializeSummaryCards(): void {
+    this.summaryCards = [
+      {
+        title: 'My Leads',
+        value: 0,
+        icon: '📋',
+        tone: 'blue'
+      },
+      {
+        title: 'Active Leads',
+        value: 0,
+        icon: '⚡',
+        tone: 'green'
+      },
+      {
+        title: 'Converted Leads',
+        value: 0,
+        icon: '✅',
+        tone: 'purple'
+      },
+      {
+        title: 'Recommendations',
+        value: 0,
+        icon: '💡',
+        tone: 'orange'
+      }
+    ];
   }
 
   private updateSummaryCards(): void {

@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {forkJoin} from 'rxjs';
 import {EChartsCoreOption} from 'echarts/core';
@@ -197,14 +197,24 @@ export class AdminDashboard implements OnInit {
   constructor(
     private dashboardService: DashboardService,
     private authService: AuthService,
-    private alerts: AlertsService
+    private alerts: AlertsService,
+    private cdr: ChangeDetectorRef
   ) {
   }
 
   ngOnInit(): void {
+    this.activeSection = 'overview';
+
     this.loadLoggedUser();
     this.setDefaultSectionByPermission();
-    this.loadDashboardData();
+    this.initializeSummaryCards();
+    this.buildCharts();
+
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      this.loadDashboardData();
+    }, 0);
   }
 
   get sidebarUserInfo(): DashboardUserInfo {
@@ -270,11 +280,18 @@ export class AdminDashboard implements OnInit {
         this.buildCharts();
 
         this.isLoading = false;
+
+        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          window.dispatchEvent(new Event('resize'));
+        }, 100);
       },
       error: (error) => {
         console.error('Dashboard load failed', error);
 
         this.isLoading = false;
+        this.cdr.detectChanges();
 
         this.alerts.error(
           'Dashboard data load failed. Please check backend API, CORS, and Spring Boot server.',
@@ -725,10 +742,16 @@ export class AdminDashboard implements OnInit {
   }
 
   private setDefaultSectionByPermission(): void {
-    const firstVisibleItem = this.getVisibleMenuItems()[0];
+    const visibleItems = this.getVisibleMenuItems();
 
-    if (firstVisibleItem) {
-      this.activeSection = firstVisibleItem.key;
+    if (!visibleItems.length) {
+      return;
+    }
+
+    const currentSectionVisible = visibleItems.some(item => item.key === this.activeSection);
+
+    if (!currentSectionVisible) {
+      this.activeSection = visibleItems[0].key;
     }
   }
 
@@ -750,6 +773,47 @@ export class AdminDashboard implements OnInit {
       ...storedUser,
       roles: storedUser.roles || roles
     };
+  }
+
+  private initializeSummaryCards(): void {
+    this.summaryCards = [
+      {
+        title: 'Total Users',
+        value: 0,
+        icon: '👥',
+        tone: 'blue'
+      },
+      {
+        title: 'Total Leads',
+        value: 0,
+        icon: '📋',
+        tone: 'green'
+      },
+      {
+        title: 'AI Predictions',
+        value: 0,
+        icon: '🤖',
+        tone: 'purple'
+      },
+      {
+        title: 'Open Fraud Alerts',
+        value: 0,
+        icon: '🚨',
+        tone: 'red'
+      },
+      {
+        title: 'Recommendations',
+        value: 0,
+        icon: '💡',
+        tone: 'orange'
+      },
+      {
+        title: 'ML Experiments',
+        value: 0,
+        icon: '🧪',
+        tone: 'dark'
+      }
+    ];
   }
 
   private updateSummaryCards(): void {

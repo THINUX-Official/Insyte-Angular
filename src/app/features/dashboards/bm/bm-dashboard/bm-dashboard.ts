@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {forkJoin} from 'rxjs';
 import {EChartsCoreOption} from 'echarts/core';
@@ -192,13 +192,23 @@ export class BmDashboard implements OnInit {
   constructor(
     private dashboardService: DashboardService,
     private authService: AuthService,
-    private alerts: AlertsService
+    private alerts: AlertsService,
+    private cdr: ChangeDetectorRef
   ) {
   }
 
   ngOnInit(): void {
+    this.activeSection = 'overview';
+
     this.setDefaultSectionByPermission();
-    this.loadLoggedUser();
+    this.initializeSummaryCards();
+    this.buildCharts();
+
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      this.loadLoggedUser();
+    }, 0);
   }
 
   get sidebarUserInfo(): DashboardUserInfo {
@@ -231,11 +241,23 @@ export class BmDashboard implements OnInit {
 
     if (selectedItem && this.can(selectedItem.permission)) {
       this.activeSection = section;
+
+      this.cdr.detectChanges();
+
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 100);
     }
   }
 
   setTeamTab(tab: TeamTab): void {
     this.activeTeamTab = tab;
+
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 100);
   }
 
   loadDashboardData(showLoader: boolean = true): void {
@@ -244,6 +266,7 @@ export class BmDashboard implements OnInit {
     }
 
     this.errorMessage = '';
+    this.cdr.detectChanges();
 
     forkJoin({
       users: this.dashboardService.getUsers(),
@@ -264,10 +287,19 @@ export class BmDashboard implements OnInit {
         this.buildCharts();
 
         this.isLoading = false;
+
+        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          window.dispatchEvent(new Event('resize'));
+        }, 100);
       },
       error: (error) => {
         console.error('BM dashboard load failed', error);
+
         this.isLoading = false;
+
+        this.cdr.detectChanges();
 
         this.alerts.errorDialog(
           'BM dashboard data load failed. Please check backend API and server.',
@@ -395,10 +427,16 @@ export class BmDashboard implements OnInit {
   }
 
   private setDefaultSectionByPermission(): void {
-    const firstVisibleItem = this.getVisibleMenuItems()[0];
+    const visibleItems = this.getVisibleMenuItems();
 
-    if (firstVisibleItem) {
-      this.activeSection = firstVisibleItem.key;
+    if (!visibleItems.length) {
+      return;
+    }
+
+    const currentSectionVisible = visibleItems.some(item => item.key === this.activeSection);
+
+    if (!currentSectionVisible) {
+      this.activeSection = visibleItems[0].key;
     }
   }
 
@@ -419,6 +457,8 @@ export class BmDashboard implements OnInit {
         'Logged user username is missing. Please login again.',
         'User Details Missing'
       );
+
+      this.cdr.detectChanges();
       return;
     }
 
@@ -427,6 +467,8 @@ export class BmDashboard implements OnInit {
       username,
       roles: storedUser?.roles || roles
     };
+
+    this.cdr.detectChanges();
 
     this.dashboardService.getUserByUsername(username).subscribe({
       next: (response) => {
@@ -443,7 +485,11 @@ export class BmDashboard implements OnInit {
           supervisorUsername: user.supervisorUsername
         };
 
-        this.loadDashboardData();
+        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          this.loadDashboardData();
+        }, 0);
       },
       error: (error) => {
         console.error('BM logged user fetch failed', error);
@@ -452,6 +498,8 @@ export class BmDashboard implements OnInit {
           'Logged user details could not be loaded. Please login again.',
           'User Details Missing'
         );
+
+        this.cdr.detectChanges();
       }
     });
   }
@@ -488,6 +536,41 @@ export class BmDashboard implements OnInit {
     this.teamRecommendations = this.recommendations.filter(item =>
       this.teamIcIds.includes(Number(item.agentId || item.userId))
     );
+  }
+
+  private initializeSummaryCards(): void {
+    this.summaryCards = [
+      {
+        title: 'UL Team Members',
+        value: 0,
+        icon: '👥',
+        tone: 'blue'
+      },
+      {
+        title: 'IC Team Members',
+        value: 0,
+        icon: '🧑‍💼',
+        tone: 'green'
+      },
+      {
+        title: 'Team Leads',
+        value: 0,
+        icon: '📋',
+        tone: 'orange'
+      },
+      {
+        title: 'Completed Leads',
+        value: 0,
+        icon: '✅',
+        tone: 'purple'
+      },
+      {
+        title: 'Average Score',
+        value: '0.00',
+        icon: '🏆',
+        tone: 'dark'
+      }
+    ];
   }
 
   private updateSummaryCards(): void {
