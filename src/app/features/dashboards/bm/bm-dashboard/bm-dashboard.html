@@ -242,5 +242,17 @@
 
       </section>
     </ng-container>
+
   </main>
+
+  <app-lead-form-modal
+    [isOpen]="isLeadModalOpen"
+    [selectedLead]="selectedLeadForEdit"
+    [users]="teamIcUsers"
+    assignMode="manual"
+    [readOnly]="isLeadViewMode"
+    (close)="closeLeadModal()"
+    (update)="updateLead($event)"
+  ></app-lead-form-modal>
+
 </div>

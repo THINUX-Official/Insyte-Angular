@@ -22,6 +22,7 @@ import {
   DashboardUserInfo
 } from '../../../../shared/components/models/dashboard-ui.model';
 import {LocationAnalytics} from '../../../../shared/components/dashboard/location-analytics/location-analytics';
+import {LeadFormModal} from '../../../../shared/components/business/lead-form-modal/lead-form-modal';
 
 interface LoggedUser {
   id?: number;
@@ -60,7 +61,8 @@ interface MenuItem {
     ChartPanel,
     DataTablePanel,
     AlertsContainer,
-    LocationAnalytics
+    LocationAnalytics,
+    LeadFormModal
   ],
   templateUrl: './zo-dashboard.html',
   styleUrls: ['./zo-dashboard.scss']
@@ -311,15 +313,6 @@ export class ZoDashboard implements OnInit {
       });
     }
 
-    if (this.can(this.permissions.LEAD_UPDATE)) {
-      actions.push({
-        label: 'Edit',
-        icon: '✏️',
-        tone: 'primary',
-        action: 'edit'
-      });
-    }
-
     return actions;
   }
 
@@ -329,35 +322,37 @@ export class ZoDashboard implements OnInit {
       return;
     }
 
-    if (event.action === 'edit') {
-      this.openEditLeadModal(event.row);
-      return;
-    }
-
     console.log('ZO lead action:', event.action, event.row);
   }
 
   openViewLeadModal(lead: any): void {
-    this.selectedLeadForEdit = lead;
+    this.selectedLeadForEdit = {...lead};
     this.isLeadViewMode = true;
     this.isLeadModalOpen = true;
+
+    this.cdr.detectChanges();
   }
 
   openEditLeadModal(lead: any): void {
-    this.selectedLeadForEdit = lead;
+    this.selectedLeadForEdit = {...lead};
     this.isLeadViewMode = false;
     this.isLeadModalOpen = true;
+
+    this.cdr.detectChanges();
   }
 
   closeLeadModal(): void {
     this.isLeadModalOpen = false;
     this.selectedLeadForEdit = null;
     this.isLeadViewMode = false;
+
+    this.cdr.detectChanges();
   }
 
   updateLead(event: { id: number; payload: any }): void {
     this.dashboardService.updateLead(event.id, event.payload).subscribe({
       next: () => {
+        this.closeLeadModal();
         this.loadDashboardData(false);
 
         setTimeout(() => {
@@ -368,12 +363,14 @@ export class ZoDashboard implements OnInit {
         }, 120);
       },
       error: (error) => {
-        console.error('ZO lead update failed', error);
+        console.error('Lead update failed', error);
 
-        this.alerts.errorDialog(
-          'Lead update failed. Please check the entered details and try again.',
-          'Lead Update Failed'
-        );
+        const message =
+          error?.error?.message ||
+          error?.error?.data ||
+          'Lead update failed. Please check the entered details and try again.';
+
+        this.alerts.errorDialog(message, 'Lead Update Failed');
       }
     });
   }

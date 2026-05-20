@@ -22,6 +22,7 @@ import {
   DashboardUserInfo
 } from '../../../../shared/components/models/dashboard-ui.model';
 import {LocationAnalytics} from '../../../../shared/components/dashboard/location-analytics/location-analytics';
+import {LeadFormModal} from '../../../../shared/components/business/lead-form-modal/lead-form-modal';
 
 interface LoggedUser {
   id?: number;
@@ -58,7 +59,8 @@ interface MenuItem {
     ChartPanel,
     DataTablePanel,
     AlertsContainer,
-    LocationAnalytics
+    LocationAnalytics,
+    LeadFormModal
   ],
   templateUrl: './ul-dashboard.html',
   styleUrls: ['./ul-dashboard.scss']
@@ -332,21 +334,27 @@ export class UlDashboard implements OnInit {
   }
 
   openViewLeadModal(lead: any): void {
-    this.selectedLeadForEdit = lead;
+    this.selectedLeadForEdit = {...lead};
     this.isLeadViewMode = true;
     this.isLeadModalOpen = true;
+
+    this.cdr.detectChanges();
   }
 
   openEditLeadModal(lead: any): void {
-    this.selectedLeadForEdit = lead;
+    this.selectedLeadForEdit = {...lead};
     this.isLeadViewMode = false;
     this.isLeadModalOpen = true;
+
+    this.cdr.detectChanges();
   }
 
   closeLeadModal(): void {
     this.isLeadModalOpen = false;
     this.selectedLeadForEdit = null;
     this.isLeadViewMode = false;
+
+    this.cdr.detectChanges();
   }
 
   updateLead(event: { id: number; payload: any }): void {
