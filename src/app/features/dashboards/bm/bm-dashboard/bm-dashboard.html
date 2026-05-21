@@ -250,9 +250,8 @@
     [selectedLead]="selectedLeadForEdit"
     [users]="teamIcUsers"
     assignMode="manual"
-    [readOnly]="isLeadViewMode"
+    [readOnly]="true"
     (close)="closeLeadModal()"
-    (update)="updateLead($event)"
   ></app-lead-form-modal>
 
 </div>

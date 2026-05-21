@@ -64,6 +64,8 @@ interface MenuItem {
 })
 export class IcDashboard implements OnInit {
 
+  isLeadViewMode = false;
+
   isLeadModalOpen = false;
   selectedLeadForEdit: any | null = null;
 
@@ -183,17 +185,34 @@ export class IcDashboard implements OnInit {
 
   openLeadModal(): void {
     this.selectedLeadForEdit = null;
+    this.isLeadViewMode = false;
     this.isLeadModalOpen = true;
+
+    this.cdr.detectChanges();
+  }
+
+  openViewLeadModal(lead: any): void {
+    this.selectedLeadForEdit = {...lead};
+    this.isLeadViewMode = true;
+    this.isLeadModalOpen = true;
+
+    this.cdr.detectChanges();
   }
 
   openEditLeadModal(lead: any): void {
-    this.selectedLeadForEdit = lead;
+    this.selectedLeadForEdit = {...lead};
+    this.isLeadViewMode = false;
     this.isLeadModalOpen = true;
+
+    this.cdr.detectChanges();
   }
 
   closeLeadModal(): void {
     this.isLeadModalOpen = false;
     this.selectedLeadForEdit = null;
+    this.isLeadViewMode = false;
+
+    this.cdr.detectChanges();
   }
 
   createLead(payload: any): void {
@@ -342,12 +361,12 @@ export class IcDashboard implements OnInit {
   }
 
   onLeadAction(event: { action: string; row: any }): void {
-    if (event.action === 'edit') {
-      this.openEditLeadModal(event.row);
+    if (event.action === 'view') {
+      this.openViewLeadModal(event.row);
       return;
     }
 
-    if (event.action === 'view') {
+    if (event.action === 'edit') {
       this.openEditLeadModal(event.row);
       return;
     }

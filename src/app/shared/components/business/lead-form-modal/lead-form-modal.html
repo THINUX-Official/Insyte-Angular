@@ -119,7 +119,7 @@
 
         <div class="form-grid">
           <div class="form-field">
-            <label>Mobile</label>
+            <label>Mobile *</label>
             <input
               type="text"
               [(ngModel)]="form.mobile"
@@ -130,6 +130,7 @@
               placeholder="Example: 07X XXX XXXX"
             >
             <small *ngIf="isInvalidMobile()">Mobile must contain 9 to 15 digits only.</small>
+            <small *ngIf="submitted && !form.mobile.trim()">Mobile is required.</small>
           </div>
 
           <div class="form-field">

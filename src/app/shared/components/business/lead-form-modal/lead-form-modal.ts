@@ -246,6 +246,7 @@ export class LeadFormModal implements OnChanges, OnInit {
       !!this.form.status &&
       !!this.form.name.trim() &&
       !!this.form.nic.trim() &&
+      !!this.form.mobile.trim() &&
       this.form.nic.trim().length <= 12 &&
       !this.isInvalidEmail() &&
       !this.isInvalidMobile() &&

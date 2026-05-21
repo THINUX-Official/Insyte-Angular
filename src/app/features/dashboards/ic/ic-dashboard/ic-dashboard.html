@@ -199,6 +199,7 @@
     [selectedLead]="selectedLeadForEdit"
     [loggedUserId]="loggedUser?.id || null"
     assignMode="self"
+    [readOnly]="isLeadViewMode"
     (close)="closeLeadModal()"
     (save)="createLead($event)"
     (update)="updateLead($event)"
