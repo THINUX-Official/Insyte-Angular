@@ -69,6 +69,9 @@ interface MenuItem {
 })
 export class AdminDashboard implements OnInit {
 
+  selectedFraudAlert: any = null;
+  showFraudReviewModal = false;
+
   isLeadModalOpen = false;
   selectedLeadForEdit: any | null = null;
   isLeadViewMode = false;
@@ -670,7 +673,101 @@ export class AdminDashboard implements OnInit {
   }
 
   onFraudAction(event: { action: string; row: any }): void {
-    console.log('Fraud action:', event.action, event.row);
+    const alert = event.row;
+
+    if (!alert?.id) {
+      this.alerts.error('Invalid fraud alert selected.', 'Action Failed');
+      return;
+    }
+
+    if (event.action === 'review') {
+      this.selectedFraudAlert = alert;
+      this.showFraudReviewModal = true;
+      return;
+    }
+
+    if (event.action === 'resolve') {
+      this.alerts.confirm({
+        title: 'Resolve Fraud Alert',
+        message: 'Are you sure you want to resolve this fraud alert?',
+        confirmText: 'Yes, Resolve',
+        cancelText: 'Cancel',
+        type: 'success'
+      }).subscribe(confirmed => {
+        if (confirmed) {
+          this.updateFraudAlertStatus(alert.id, 'RESOLVED', 'Fraud alert resolved successfully.');
+        }
+      });
+    }
+  }
+
+  closeFraudReviewModal(): void {
+    this.showFraudReviewModal = false;
+    this.selectedFraudAlert = null;
+  }
+
+  markFraudAsUnderReview(): void {
+    if (!this.selectedFraudAlert?.id) return;
+
+    this.updateFraudAlertStatus(
+      this.selectedFraudAlert.id,
+      'UNDER_REVIEW',
+      'Fraud alert marked as under review.'
+    );
+
+    this.closeFraudReviewModal();
+  }
+
+  resolveSelectedFraudAlert(): void {
+    if (!this.selectedFraudAlert?.id) return;
+
+    this.alerts.confirm({
+      title: 'Resolve Fraud Alert',
+      message: 'Are you sure you want to resolve this fraud alert?',
+      confirmText: 'Yes, Resolve',
+      cancelText: 'Cancel',
+      type: 'success'
+    }).subscribe(confirmed => {
+      if (confirmed) {
+        this.updateFraudAlertStatus(
+          this.selectedFraudAlert.id,
+          'RESOLVED',
+          'Fraud alert resolved successfully.'
+        );
+
+        this.closeFraudReviewModal();
+      }
+    });
+  }
+
+  private updateFraudAlertStatus(id: number, status: 'UNDER_REVIEW' | 'RESOLVED' | 'FALSE_POSITIVE', successMessage: string): void {
+    this.dashboardService.updateFraudAlertStatus(id, status).subscribe({
+      next: () => {
+        this.alerts.success(successMessage, 'Fraud Alert Updated');
+
+        this.fraudAlerts = this.fraudAlerts.map(alert =>
+          alert.id === id
+            ? {
+              ...alert,
+              status: status,
+              reviewedAt: new Date().toISOString(),
+              reviewedByUsername: this.loggedUser?.username
+            }
+            : alert
+        );
+
+        this.updateSummaryCards();
+        this.buildCharts();
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Fraud alert update failed', error);
+        this.alerts.error(
+          'Fraud alert update failed. Please check backend API or permission.',
+          'Update Failed'
+        );
+      }
+    });
   }
 
   getTotalAgents(): number {

@@ -239,7 +239,7 @@
           [actions]="getFraudActions()"
           emptyMessage="No open fraud alerts found."
           [enableExport]="true"
-          exportFileName="admin-opern-fraud-alert-report"
+          exportFileName="admin-open-fraud-alert-report"
           (actionClick)="onFraudAction($event)"
         ></app-data-table-panel>
 
@@ -288,6 +288,52 @@
     </ng-container>
 
   </main>
+
+  <div class="fraud-modal-backdrop" *ngIf="showFraudReviewModal">
+    <div class="fraud-modal">
+      <div class="fraud-modal-header">
+        <h3>Fraud Alert Review</h3>
+        <button type="button" class="close-btn" (click)="closeFraudReviewModal()">×</button>
+      </div>
+
+      <div class="fraud-modal-body" *ngIf="selectedFraudAlert">
+        <p>
+          <strong>Agent:</strong>
+          {{ selectedFraudAlert.nickname || selectedFraudAlert.username || selectedFraudAlert.agentId || 'N/A' }}
+        </p>
+
+        <p>
+          <strong>Risk Level:</strong>
+          {{ selectedFraudAlert.severity || 'N/A' }}
+        </p>
+
+        <p><strong>Status:</strong> {{ selectedFraudAlert.status || 'N/A' }}</p>
+
+        <p><strong>Alert Type:</strong> {{ selectedFraudAlert.alertType || 'N/A' }}</p>
+
+        <p><strong>Description:</strong> {{ selectedFraudAlert.description || 'N/A' }}</p>
+
+        <p>
+          <strong>Detected Date:</strong>
+          {{ selectedFraudAlert.detectedAt ? (selectedFraudAlert.detectedAt | date:'medium') : 'N/A' }}
+        </p>
+      </div>
+
+      <div class="fraud-modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeFraudReviewModal()">
+          Close
+        </button>
+
+        <button type="button" class="btn-warning" (click)="markFraudAsUnderReview()">
+          Mark as Under Review
+        </button>
+
+        <button type="button" class="btn-success" (click)="resolveSelectedFraudAlert()">
+          Resolve
+        </button>
+      </div>
+    </div>
+  </div>
 
   <app-user-form-modal
     [isOpen]="isUserModalOpen"

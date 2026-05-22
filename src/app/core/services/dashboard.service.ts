@@ -45,6 +45,12 @@ export class DashboardService {
   constructor(private http: HttpClient) {
   }
 
+  updateFraudAlertStatus(id: number, status: string) {
+    return this.http.put<any>(`${this.apiUrl}/fraud-alerts/${id}/status`, {
+      status: status
+    });
+  }
+
   getMyTeamLocationPerformance(year: number, month: number): Observable<LocationPerformance[]> {
     return this.http
       .get<StandardResponse<LocationPerformance[]>>(
