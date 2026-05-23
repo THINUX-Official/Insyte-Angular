@@ -1,0 +1,31 @@
+<aside class="dashboard-sidebar" [ngClass]="theme">
+
+  <div class="brand-box">
+    <div class="brand-logo">
+      {{ logoText }}
+    </div>
+
+    <div>
+      <h2>{{ title }}</h2>
+      <span>{{ subtitle }}</span>
+    </div>
+  </div>
+
+  <nav class="side-menu">
+    <button
+      type="button"
+      *ngFor="let item of menuItems"
+      [class.active]="activeSection === item.key"
+      (click)="onSectionClick(item.key)"
+    >
+      <span>{{ item.icon }}</span>
+      {{ item.label }}
+    </button>
+  </nav>
+
+  <div class="sidebar-footer" *ngIf="userInfo">
+    <strong>{{ userInfo.displayName }}</strong>
+    <span>{{ userInfo.roleLabel }}</span>
+  </div>
+
+</aside>

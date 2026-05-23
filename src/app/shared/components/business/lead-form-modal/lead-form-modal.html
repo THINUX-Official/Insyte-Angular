@@ -1,0 +1,347 @@
+<div class="modal-backdrop" *ngIf="isOpen">
+  <div class="modal-card">
+
+    <div class="modal-header">
+      <div>
+        <h2>{{ modalTitle }}</h2>
+        <p>{{ modalDescription }}</p>
+      </div>
+
+      <button type="button" class="close-btn" (click)="onClose()">×</button>
+    </div>
+
+    <form class="lead-form" (ngSubmit)="submit()">
+
+      <!-- Customer Details -->
+      <section class="form-section">
+        <div class="section-heading">
+          <h3>Customer Details</h3>
+          <p>Basic customer information.</p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Name *</label>
+            <input
+              type="text"
+              [(ngModel)]="form.name"
+              name="name"
+              [disabled]="readOnly"
+              [class.invalid]="isInvalidName()"
+              placeholder="Enter customer name"
+            >
+            <small *ngIf="isInvalidName()">Name is required.</small>
+          </div>
+
+          <div class="form-field">
+            <label>NIC *</label>
+            <input
+              type="text"
+              [(ngModel)]="form.nic"
+              name="nic"
+              [disabled]="readOnly"
+              maxlength="12"
+              [class.invalid]="isInvalidNic()"
+              placeholder="Enter NIC"
+            >
+            <small *ngIf="submitted && !form.nic.trim()">NIC is required.</small>
+            <small *ngIf="submitted && form.nic.trim() && form.nic.trim().length > 12">
+              NIC cannot exceed 12 characters.
+            </small>
+          </div>
+
+          <div class="form-field">
+            <label>Gender</label>
+            <div class="radio-row">
+              <label class="radio-pill" *ngFor="let option of genderOptions">
+                <input
+                  type="radio"
+                  name="gender"
+                  [disabled]="readOnly"
+                  [value]="option"
+                  [(ngModel)]="form.gender"
+                >
+                <span>{{ formatLabel(option) }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label>Civil Status</label>
+            <select [(ngModel)]="form.civilStatus" name="civilStatus" [disabled]="readOnly">
+              <option value="">Select civil status</option>
+              <option *ngFor="let option of civilStatusOptions" [value]="option">
+                {{ formatLabel(option) }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label>Date of Birth</label>
+            <input type="date" [(ngModel)]="form.dob" name="dob" [disabled]="readOnly">
+          </div>
+
+          <div class="form-field">
+            <label>Occupation</label>
+            <select
+              [(ngModel)]="form.occupationId"
+              name="occupationId"
+              [disabled]="readOnly || isOccupationLoading"
+            >
+              <option [ngValue]="null">
+                {{ isOccupationLoading ? 'Loading occupations...' : 'Select occupation' }}
+              </option>
+
+              <option *ngFor="let occupation of occupationOptions" [ngValue]="occupation.id">
+                {{ occupation.name }} - {{ occupation.code }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label>Race</label>
+            <select [(ngModel)]="form.race" name="race" [disabled]="readOnly">
+              <option value="">Select race</option>
+              <option *ngFor="let option of raceOptions" [value]="option">
+                {{ formatLabel(option) }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact and Address -->
+      <section class="form-section">
+        <div class="section-heading">
+          <h3>Contact & Address</h3>
+          <p>Customer contact and location details.</p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Mobile *</label>
+            <input
+              type="text"
+              [(ngModel)]="form.mobile"
+              name="mobile"
+              [disabled]="readOnly"
+              maxlength="15"
+              [class.invalid]="isInvalidMobile()"
+              placeholder="Example: 07X XXX XXXX"
+            >
+            <small *ngIf="isInvalidMobile()">Mobile must contain 9 to 15 digits only.</small>
+            <small *ngIf="submitted && !form.mobile.trim()">Mobile is required.</small>
+          </div>
+
+          <div class="form-field">
+            <label>Email</label>
+            <input
+              type="email"
+              [(ngModel)]="form.email"
+              name="email"
+              [disabled]="readOnly"
+              [class.invalid]="isInvalidEmail()"
+              placeholder="Enter email"
+            >
+            <small *ngIf="isInvalidEmail()">Enter a valid email address.</small>
+          </div>
+
+          <div class="form-field">
+            <label>Address Line 1</label>
+            <input type="text" [(ngModel)]="form.address1" name="address1" [disabled]="readOnly"
+                   placeholder="Address line 1">
+          </div>
+
+          <div class="form-field">
+            <label>Address Line 2</label>
+            <input type="text" [(ngModel)]="form.address2" name="address2" [disabled]="readOnly"
+                   placeholder="Address line 2">
+          </div>
+
+          <div class="form-field">
+            <label>City</label>
+            <input type="text" [(ngModel)]="form.city" name="city" [disabled]="readOnly" placeholder="Enter city">
+          </div>
+
+          <div class="form-field">
+            <label>District</label>
+            <select [(ngModel)]="form.district" name="district" [disabled]="readOnly">
+              <option value="">Select district</option>
+              <option *ngFor="let option of districtOptions" [value]="option">
+                {{ formatLabel(option) }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label>Province</label>
+            <select [(ngModel)]="form.province" name="province" [disabled]="readOnly">
+              <option value="">Select province</option>
+              <option *ngFor="let option of provinceOptions" [value]="option">
+                {{ formatLabel(option) }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label>Country</label>
+            <select [(ngModel)]="form.country" name="country" [disabled]="readOnly">
+              <option value="">Select country</option>
+              <option *ngFor="let option of countryOptions" [value]="option">
+                {{ formatLabel(option) }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Insurance Details -->
+      <section class="form-section">
+        <div class="section-heading">
+          <h3>Insurance Details</h3>
+          <p>Product, premium, lead status and probability.</p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Status *</label>
+            <select
+              [(ngModel)]="form.status"
+              name="status"
+              [disabled]="readOnly"
+              [class.invalid]="isInvalidStatus()"
+            >
+              <option value="">Select status</option>
+              <option *ngFor="let option of leadStatusOptions" [value]="option">
+                {{ formatLabel(option) }}
+              </option>
+            </select>
+            <small *ngIf="isInvalidStatus()">Status is required.</small>
+          </div>
+
+          <div class="form-field" *ngIf="assignMode === 'manual'">
+            <label>Assigned User *</label>
+            <select
+              [(ngModel)]="form.assignedUserId"
+              name="assignedUserId"
+              [disabled]="readOnly"
+              [class.invalid]="submitted && !form.assignedUserId"
+            >
+              <option [ngValue]="null">Select assigned user</option>
+              <option *ngFor="let user of users" [ngValue]="user.id">
+                {{ user.nickname || user.username }} - {{ user.roles?.join(', ') }}
+              </option>
+            </select>
+
+            <small *ngIf="submitted && !form.assignedUserId">
+              Assigned user is required.
+            </small>
+          </div>
+
+          <div class="form-field">
+            <label>Product Type</label>
+            <select [(ngModel)]="form.productType" name="productType" [disabled]="readOnly">
+              <option value="">Select product type</option>
+              <option *ngFor="let option of productTypeOptions" [value]="option">
+                {{ formatLabel(option) }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label>Premium</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              [(ngModel)]="form.premium"
+              name="premium"
+              [disabled]="readOnly"
+              [class.invalid]="isInvalidPremium()"
+              placeholder="Enter premium"
+            >
+            <small *ngIf="isInvalidPremium()">Premium cannot be negative.</small>
+          </div>
+
+          <div class="form-field">
+            <label>Lead Source</label>
+            <select [(ngModel)]="form.leadSource" name="leadSource" [disabled]="readOnly">
+              <option value="">Select lead source</option>
+              <option *ngFor="let option of leadSourceOptions" [value]="option">
+                {{ formatLabel(option) }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-field full">
+            <label>Probability</label>
+            <div class="probability-row">
+              <label class="probability-card" *ngFor="let option of probabilityOptions">
+                <input
+                  type="radio"
+                  name="probability"
+                  [disabled]="readOnly"
+                  [value]="option"
+                  [(ngModel)]="form.probability"
+                >
+                <span>{{ formatLabel(option) }}</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Follow-up -->
+      <section class="form-section">
+        <div class="section-heading">
+          <h3>Follow-up Details</h3>
+          <p>Reminder and additional remarks.</p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Remind Date</label>
+            <input type="date" [(ngModel)]="form.remindDate" name="remindDate" [disabled]="readOnly">
+          </div>
+
+          <div class="form-field">
+            <label>Attachment Path</label>
+            <input
+              type="text"
+              [(ngModel)]="form.attachmentPath"
+              name="attachmentPath"
+              [disabled]="readOnly"
+              placeholder="Optional attachment path"
+            >
+          </div>
+
+          <div class="form-field full">
+            <label>Remark</label>
+            <textarea
+              [(ngModel)]="form.remark"
+              name="remark"
+              [disabled]="readOnly"
+              rows="4"
+              placeholder="Enter remark"
+            ></textarea>
+          </div>
+        </div>
+      </section>
+
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" (click)="onClose()">
+          {{ readOnly ? 'Close' : 'Cancel' }}
+        </button>
+
+        <button
+          type="submit"
+          class="save-btn"
+          *ngIf="!readOnly"
+        >
+          {{ isEditMode ? 'Update Lead' : 'Save Lead' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

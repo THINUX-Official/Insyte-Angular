@@ -1,0 +1,282 @@
+<div class="rm-shell">
+
+  <app-dashboard-sidebar
+    title="Insyte"
+    subtitle="Regional Manager Console"
+    logoText="RM"
+    theme="team"
+    [menuItems]="getVisibleMenuItems()"
+    [activeSection]="activeSection"
+    [userInfo]="sidebarUserInfo"
+    (sectionChange)="setActiveSection($event)"
+  ></app-dashboard-sidebar>
+
+  <main class="rm-main">
+
+    <app-dashboard-topbar
+      pageLabel="Regional Manager Dashboard"
+      [title]="'Welcome back, ' + displayName"
+      [subtitle]="loggedUser?.email || 'regional manager email not available'"
+      theme="team"
+      [userInfo]="sidebarUserInfo"
+      [showRefresh]="false"
+      [showPipeline]="false"
+      (logoutClick)="logout()"
+    ></app-dashboard-topbar>
+
+    <app-alerts-container></app-alerts-container>
+
+    <div class="loader-card inline-loader" *ngIf="isLoading">
+      Loading RM dashboard data...
+    </div>
+
+    <ng-container>
+
+      <!-- OVERVIEW -->
+      <section *ngIf="activeSection === 'overview'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>Regional Overview</h2>
+          <p>Summary of BM, UL, IC users, regional leads and performance.</p>
+        </div>
+
+        <section class="summary-grid">
+          <app-summary-card
+            *ngFor="let card of summaryCards"
+            [card]="card"
+          ></app-summary-card>
+        </section>
+
+        <section class="mini-grid">
+          <article>
+            <span>Active Leads</span>
+            <strong>{{ getActiveLeadCount() }}</strong>
+          </article>
+
+          <article>
+            <span>Completed Leads</span>
+            <strong>{{ getCompletedLeadCount() }}</strong>
+          </article>
+
+          <article>
+            <span>Cancelled Leads</span>
+            <strong>{{ getCancelledLeadCount() }}</strong>
+          </article>
+
+          <article>
+            <span>Recommendations</span>
+            <strong>{{ teamRecommendations.length }}</strong>
+          </article>
+        </section>
+
+        <section class="chart-grid two">
+          <app-chart-panel
+            [chartOptions]="leadStatusChartOption"
+            title="Regional Lead Status"
+            subtitle="Lead distribution across your regional IC hierarchy."
+            [hasData]="teamLeads.length > 0"
+            emptyMessage="No regional leads available."
+          ></app-chart-panel>
+
+          <app-chart-panel
+            [chartOptions]="teamPerformanceChartOption"
+            title="Regional IC Performance"
+            subtitle="Top performance scores under your region."
+            [hasData]="teamPerformance.length > 0"
+            emptyMessage="No regional performance records available."
+          ></app-chart-panel>
+        </section>
+
+      </section>
+
+      <!-- TEAM -->
+      <section *ngIf="activeSection === 'team'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>My Regional Team</h2>
+          <p>View Branch Managers, Unit Leaders and Insurance Consultants under your region.</p>
+        </div>
+
+        <div class="team-tabs">
+          <button
+            type="button"
+            [class.active]="activeTeamTab === 'bm'"
+            (click)="setTeamTab('bm')"
+          >
+            BM Team
+            <span>{{ teamBmUsers.length }}</span>
+          </button>
+
+          <button
+            type="button"
+            [class.active]="activeTeamTab === 'ul'"
+            (click)="setTeamTab('ul')"
+          >
+            UL Team
+            <span>{{ teamUlUsers.length }}</span>
+          </button>
+
+          <button
+            type="button"
+            [class.active]="activeTeamTab === 'ic'"
+            (click)="setTeamTab('ic')"
+          >
+            IC Team
+            <span>{{ teamIcUsers.length }}</span>
+          </button>
+        </div>
+
+        <app-data-table-panel
+          *ngIf="activeTeamTab === 'bm'"
+          title="BM Team Members"
+          subtitle="Branch Managers reporting directly to this Regional Manager."
+          [columns]="teamUserColumns"
+          [rows]="teamBmUsers"
+          [pageSize]="10"
+          searchPlaceholder="Search team users..."
+          [enableStatusFilter]="true"
+          statusFilterKey="status"
+          maxTableHeight="430px"
+          emptyMessage="No BM users found under your supervision."
+          [enableExport]="true"
+          exportFileName="rm-bm_team-report"
+        ></app-data-table-panel>
+
+        <app-data-table-panel
+          *ngIf="activeTeamTab === 'ul'"
+          title="UL Team Members"
+          subtitle="Unit Leaders under your Branch Managers."
+          [columns]="teamUserColumns"
+          [rows]="teamUlUsers"
+          [pageSize]="10"
+          searchPlaceholder="Search team users..."
+          [enableStatusFilter]="true"
+          statusFilterKey="status"
+          maxTableHeight="430px"
+          emptyMessage="No UL users found under your region."
+          [enableExport]="true"
+          exportFileName="rm-ul_team-report"
+        ></app-data-table-panel>
+
+        <app-data-table-panel
+          *ngIf="activeTeamTab === 'ic'"
+          title="IC Team Members"
+          subtitle="Insurance consultants under your hierarchy."
+          [columns]="teamUserColumns"
+          [rows]="teamIcUsers"
+          [pageSize]="10"
+          searchPlaceholder="Search team users..."
+          [enableStatusFilter]="true"
+          statusFilterKey="status"
+          maxTableHeight="430px"
+          emptyMessage="No IC users found."
+          [enableExport]="true"
+          exportFileName="rm-ic_team-report"
+        ></app-data-table-panel>
+
+      </section>
+
+      <!-- LEADS -->
+      <section *ngIf="activeSection === 'leads'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>Regional Leads</h2>
+          <p>Lead records assigned to IC users under your regional hierarchy.</p>
+        </div>
+
+        <app-data-table-panel
+          title="Regional Lead Records"
+          subtitle="View and update leads handled by IC users under your region."
+          [columns]="leadColumns"
+          [rows]="teamLeads"
+          [actions]="getLeadActions()"
+          [pageSize]="10"
+          maxTableHeight="480px"
+          emptyMessage="No regional leads found."
+          [enableExport]="true"
+          exportFileName="rm-team-leads-report"
+          (actionClick)="onLeadAction($event)"
+        ></app-data-table-panel>
+
+      </section>
+
+      <!-- PERFORMANCE -->
+      <section *ngIf="activeSection === 'performance'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>Regional Performance</h2>
+          <p>Monthly performance and target achievement of IC users under your region.</p>
+        </div>
+
+        <section class="chart-grid two">
+          <app-chart-panel
+            [chartOptions]="teamPerformanceChartOption"
+            title="Regional IC Performance"
+            subtitle="Performance score comparison."
+            [hasData]="teamPerformance.length > 0"
+            emptyMessage="No performance records available."
+          ></app-chart-panel>
+
+          <app-chart-panel
+            [chartOptions]="predictionChartOption"
+            title="Regional Prediction Risk"
+            subtitle="AI prediction risk distribution."
+            [hasData]="teamPredictions.length > 0"
+            emptyMessage="No prediction records available."
+          ></app-chart-panel>
+        </section>
+
+        <app-data-table-panel
+          title="Regional Performance Records"
+          subtitle="Monthly IC performance records under your region."
+          [columns]="performanceColumns"
+          [rows]="teamPerformance"
+          [pageSize]="10"
+          maxTableHeight="430px"
+          emptyMessage="No performance records found."
+          [enableExport]="true"
+          exportFileName="rm-ic_performance-report"
+        ></app-data-table-panel>
+
+        <app-location-analytics
+          [year]="2026"
+          [month]="5"
+          [limit]="5">
+        </app-location-analytics>
+      </section>
+
+      <!-- RECOMMENDATIONS -->
+      <section *ngIf="activeSection === 'recommendations'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>Regional Recommendations</h2>
+          <p>AI-generated recommendations for IC users under your regional hierarchy.</p>
+        </div>
+
+        <app-data-table-panel
+          title="Regional Recommendations"
+          subtitle="Recommendations generated for regional performance improvement."
+          [columns]="recommendationColumns"
+          [rows]="teamRecommendations"
+          [pageSize]="10"
+          maxTableHeight="430px"
+          emptyMessage="No recommendations found for your region."
+          [enableExport]="true"
+          exportFileName="rm-regional-recommendation-report"
+        ></app-data-table-panel>
+
+      </section>
+    </ng-container>
+
+  </main>
+
+  <app-lead-form-modal
+    [isOpen]="isLeadModalOpen"
+    [selectedLead]="selectedLeadForEdit"
+    [users]="teamIcUsers"
+    assignMode="manual"
+    [readOnly]="true"
+    (close)="closeLeadModal()"
+  ></app-lead-form-modal>
+
+</div>

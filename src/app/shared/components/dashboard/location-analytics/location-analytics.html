@@ -1,0 +1,93 @@
+<section class="location-analytics-section">
+  <div class="section-header">
+    <div>
+      <h2>Location-Based Analytics</h2>
+      <p>Best and least-performing sales locations based on lead conversion rate.</p>
+    </div>
+
+    <button
+      *ngIf="showGenerateButton"
+      type="button"
+      class="generate-btn"
+      (click)="generateLocationPerformance()"
+      [disabled]="generating">
+
+      {{ generating ? 'Generating...' : 'Generate Analytics' }}
+    </button>
+  </div>
+
+  <div class="loading-card" *ngIf="loading">
+    Loading location analytics...
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <div class="location-chart-grid">
+      <div class="analytics-card">
+        <div
+          echarts
+          [options]="topLocationChartOptions"
+          class="location-chart">
+        </div>
+      </div>
+
+      <div class="analytics-card">
+        <div
+          echarts
+          [options]="bottomLocationChartOptions"
+          class="location-chart">
+        </div>
+      </div>
+    </div>
+
+    <div class="analytics-card table-card">
+      <div class="table-header">
+        <h3>Location Performance Summary</h3>
+        <span>{{ locationPerformance.length }} locations</span>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+          <tr>
+            <th>Province</th>
+            <th>District</th>
+            <th>Total Leads</th>
+            <th>Converted</th>
+            <th>Conversion Rate</th>
+            <th>Total Premium</th>
+            <th>Avg Premium</th>
+            <th>Category</th>
+          </tr>
+          </thead>
+
+          <tbody>
+          <tr *ngFor="let item of locationPerformance; trackBy: trackByLocation">
+            <td>{{ item.province }}</td>
+            <td>{{ item.district }}</td>
+            <td>{{ item.totalLeads }}</td>
+            <td>{{ item.convertedLeads }}</td>
+            <td>{{ item.conversionRate }}%</td>
+            <td>{{ item.totalPremium | number:'1.2-2' }}</td>
+            <td>{{ item.averagePremium | number:'1.2-2' }}</td>
+            <td>
+              <span
+                class="category-badge"
+                [class.high]="item.performanceCategory === 'HIGH'"
+                [class.medium]="item.performanceCategory === 'MEDIUM'"
+                [class.low]="item.performanceCategory === 'LOW'">
+                {{ item.performanceCategory }}
+              </span>
+            </td>
+          </tr>
+
+          <tr *ngIf="!locationPerformance.length">
+            <td colspan="8" class="empty-cell">
+              No location analytics data available for this month.
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+</section>

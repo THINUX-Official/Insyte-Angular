@@ -1,0 +1,78 @@
+<!-- Toast Alert -->
+<div class="alert-toast" [ngClass]="alert.type" *ngIf="alert.show && alert.message">
+  <div class="alert-icon">
+    {{ alertIcon }}
+  </div>
+
+  <div class="alert-content">
+    <strong>{{ alert.title }}</strong>
+    <p>{{ alert.message }}</p>
+  </div>
+
+  <button
+    type="button"
+    class="alert-close"
+    *ngIf="alert.dismissible"
+    (click)="closeAlert()"
+  >
+    ×
+  </button>
+</div>
+
+<!-- Confirm Dialog -->
+<div class="confirm-backdrop" *ngIf="confirm?.show">
+  <div class="confirm-card" [ngClass]="confirm?.type || 'warning'">
+
+    <div class="confirm-icon">
+      {{ confirmIcon }}
+    </div>
+
+    <div class="confirm-content">
+      <h2>{{ confirm?.title }}</h2>
+      <p>{{ confirm?.message }}</p>
+    </div>
+
+    <div class="confirm-actions">
+      <button type="button" class="cancel-btn" (click)="confirmNo()">
+        {{ confirm?.cancelText || 'Cancel' }}
+      </button>
+
+      <button
+        type="button"
+        class="confirm-btn"
+        [ngClass]="confirm?.type || 'warning'"
+        (click)="confirmYes()"
+      >
+        {{ confirm?.confirmText || 'Yes' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Message Dialog -->
+<div class="confirm-backdrop" *ngIf="messageDialog?.show">
+  <div class="confirm-card" [ngClass]="messageDialog?.type || 'info'">
+
+    <div class="confirm-icon">
+      {{ messageDialogIcon }}
+    </div>
+
+    <div class="confirm-content">
+      <h2>{{ messageDialog?.title }}</h2>
+      <p>{{ messageDialog?.message }}</p>
+    </div>
+
+    <div class="confirm-actions single">
+      <button
+        type="button"
+        class="confirm-btn"
+        [ngClass]="messageDialog?.type || 'info'"
+        (click)="closeMessageDialog()"
+      >
+        {{ messageDialog?.buttonText || 'OK' }}
+      </button>
+    </div>
+
+  </div>
+</div>

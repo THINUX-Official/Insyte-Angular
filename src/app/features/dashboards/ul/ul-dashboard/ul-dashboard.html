@@ -1,0 +1,221 @@
+<div class="ul-shell">
+
+  <app-dashboard-sidebar
+    title="Insyte"
+    subtitle="Unit Leader Console"
+    logoText="UL"
+    theme="team"
+    [menuItems]="getVisibleMenuItems()"
+    [activeSection]="activeSection"
+    [userInfo]="sidebarUserInfo"
+    (sectionChange)="setActiveSection($event)"
+  ></app-dashboard-sidebar>
+
+  <main class="ul-main">
+
+    <app-dashboard-topbar
+      pageLabel="Unit Leader Dashboard"
+      [title]="'Welcome back, ' + displayName"
+      [subtitle]="loggedUser?.email || 'unit leader email not available'"
+      theme="team"
+      [userInfo]="sidebarUserInfo"
+      [showRefresh]="false"
+      [showPipeline]="false"
+      (logoutClick)="logout()"
+    ></app-dashboard-topbar>
+
+    <app-alerts-container></app-alerts-container>
+
+    <div class="loader-card inline-loader" *ngIf="isLoading">
+      Loading UL dashboard data...
+    </div>
+
+    <ng-container>
+
+      <!-- OVERVIEW -->
+      <section *ngIf="activeSection === 'overview'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>Team Overview</h2>
+          <p>Summary of IC team members, assigned leads and team performance.</p>
+        </div>
+
+        <section class="summary-grid">
+          <app-summary-card
+            *ngFor="let card of summaryCards"
+            [card]="card"
+          ></app-summary-card>
+        </section>
+
+        <section class="mini-grid">
+          <article>
+            <span>Cancelled Leads</span>
+            <strong>{{ getCancelledLeadCount() }}</strong>
+          </article>
+
+          <article>
+            <span>Team Recommendations</span>
+            <strong>{{ teamRecommendations.length }}</strong>
+          </article>
+
+          <article>
+            <span>Predictions</span>
+            <strong>{{ teamPredictions.length }}</strong>
+          </article>
+
+          <article>
+            <span>Team ICs</span>
+            <strong>{{ teamUsers.length }}</strong>
+          </article>
+        </section>
+
+        <section class="chart-grid two">
+          <app-chart-panel
+            [chartOptions]="leadStatusChartOption"
+            title="Team Lead Status"
+            subtitle="Lead distribution across your IC team."
+            [hasData]="teamLeads.length > 0"
+            emptyMessage="No team leads available."
+          ></app-chart-panel>
+
+          <app-chart-panel
+            [chartOptions]="teamPerformanceChartOption"
+            title="Team Performance"
+            subtitle="Top performance scores in your team."
+            [hasData]="teamPerformance.length > 0"
+            emptyMessage="No team performance records available."
+          ></app-chart-panel>
+        </section>
+
+      </section>
+
+      <!-- TEAM -->
+      <section *ngIf="activeSection === 'team'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>My IC Team</h2>
+          <p>Insurance consultants reporting directly to you.</p>
+        </div>
+
+        <app-data-table-panel
+          title="IC Team Members"
+          subtitle="Users where supervisor is the logged Unit Leader."
+          [columns]="teamUserColumns"
+          [rows]="teamUsers"
+          [pageSize]="10"
+          searchPlaceholder="Search team users..."
+          [enableStatusFilter]="true"
+          statusFilterKey="status"
+          maxTableHeight="430px"
+          emptyMessage="No IC users found under your supervision."
+          [enableExport]="true"
+          exportFileName="ul-team-report"
+        ></app-data-table-panel>
+
+      </section>
+
+      <!-- LEADS -->
+      <section *ngIf="activeSection === 'leads'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>Team Leads</h2>
+          <p>Lead records assigned to IC users under your supervision.</p>
+        </div>
+
+        <app-data-table-panel
+          title="Team Lead Records"
+          subtitle="View and update your team's lead records."
+          [columns]="leadColumns"
+          [rows]="teamLeads"
+          [actions]="getLeadActions()"
+          [pageSize]="10"
+          maxTableHeight="480px"
+          emptyMessage="No team leads found."
+          [enableExport]="true"
+          exportFileName="ul-team-leads-report"
+          (actionClick)="onLeadAction($event)"
+        ></app-data-table-panel>
+
+      </section>
+
+      <!-- PERFORMANCE -->
+      <section *ngIf="activeSection === 'performance'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>Team Performance</h2>
+          <p>Monthly performance and target achievement of your IC team.</p>
+        </div>
+
+        <section class="chart-grid two">
+          <app-chart-panel
+            [chartOptions]="teamPerformanceChartOption"
+            title="Team Performance Score"
+            subtitle="Performance score comparison."
+            [hasData]="teamPerformance.length > 0"
+            emptyMessage="No performance records available."
+          ></app-chart-panel>
+
+          <app-chart-panel
+            [chartOptions]="predictionChartOption"
+            title="Team Prediction Risk"
+            subtitle="AI prediction risk distribution."
+            [hasData]="teamPredictions.length > 0"
+            emptyMessage="No prediction records available."
+          ></app-chart-panel>
+        </section>
+
+        <app-data-table-panel
+          title="Team Performance Records"
+          subtitle="Monthly IC performance records."
+          [columns]="performanceColumns"
+          [rows]="teamPerformance"
+          [pageSize]="10"
+          maxTableHeight="430px"
+          emptyMessage="No performance records found."
+          [enableExport]="true"
+          exportFileName="ul-team-performance-report"
+        ></app-data-table-panel>
+
+        <app-location-analytics
+          [year]="2026"
+          [month]="5"
+          [limit]="5">
+        </app-location-analytics>
+      </section>
+
+      <!-- RECOMMENDATIONS -->
+      <section *ngIf="activeSection === 'recommendations'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>Team Recommendations</h2>
+          <p>AI-generated recommendations for IC users under your supervision.</p>
+        </div>
+
+        <app-data-table-panel
+          title="Team Recommendations"
+          subtitle="Recommendations generated for team improvement."
+          [columns]="recommendationColumns"
+          [rows]="teamRecommendations"
+          [pageSize]="10"
+          maxTableHeight="430px"
+          emptyMessage="No recommendations found for your team."
+          [enableExport]="true"
+          exportFileName="ul-team-recommendation-report"
+        ></app-data-table-panel>
+
+      </section>
+    </ng-container>
+
+  </main>
+
+  <app-lead-form-modal
+    [isOpen]="isLeadModalOpen"
+    [selectedLead]="selectedLeadForEdit"
+    [users]="teamUsers"
+    assignMode="manual"
+    [readOnly]="isLeadViewMode"
+    (close)="closeLeadModal()"
+    (update)="updateLead($event)"
+  ></app-lead-form-modal>
+
+</div>

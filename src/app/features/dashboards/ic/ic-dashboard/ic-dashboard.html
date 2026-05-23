@@ -1,0 +1,208 @@
+<div class="ic-shell">
+
+  <app-dashboard-sidebar
+    title="Insyte"
+    subtitle="Agent Console"
+    logoText="IC"
+    theme="agent"
+    [menuItems]="getVisibleMenuItems()"
+    [activeSection]="activeSection"
+    [userInfo]="sidebarUserInfo"
+    (sectionChange)="setActiveSection($event)"
+  ></app-dashboard-sidebar>
+
+  <main class="ic-main">
+
+    <app-dashboard-topbar
+      pageLabel="Insurance Consultant Dashboard"
+      [title]="'Welcome back, ' + displayName"
+      [subtitle]="loggedUser?.email || 'agent email not available'"
+      theme="agent"
+      [userInfo]="sidebarUserInfo"
+      [showRefresh]="false"
+      [showPipeline]="false"
+      (logoutClick)="logout()"
+    ></app-dashboard-topbar>
+
+    <app-alerts-container></app-alerts-container>
+
+    <div class="message error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <div class="loader-card inline-loader" *ngIf="isLoading">
+      Loading IC dashboard data...
+    </div>
+
+    <ng-container>
+
+      <!-- OVERVIEW -->
+      <section *ngIf="activeSection === 'overview'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>My Overview</h2>
+          <p>Your leads, monthly performance, prediction and recommendations summary.</p>
+        </div>
+
+        <section class="summary-grid">
+          <app-summary-card
+            *ngFor="let card of summaryCards"
+            [card]="card"
+          ></app-summary-card>
+        </section>
+
+        <section class="mini-grid">
+          <article>
+            <span>Cancelled Leads</span>
+            <strong>{{ getCancelledLeadCount() }}</strong>
+          </article>
+
+          <article>
+            <span>Latest Score</span>
+            <strong>{{ getLatestPerformanceScore() | number:'1.2-2' }}</strong>
+          </article>
+
+          <article>
+            <span>Prediction Risk</span>
+            <strong>{{ getLatestPrediction()?.riskLevel || '-' }}</strong>
+          </article>
+
+          <article>
+            <span>Prediction Label</span>
+            <strong>{{ getLatestPrediction()?.predictionLabel || '-' }}</strong>
+          </article>
+        </section>
+
+        <section class="chart-grid two">
+          <app-chart-panel
+            [chartOptions]="leadStatusChartOption"
+            title="My Lead Status"
+            subtitle="Status distribution of your leads"
+            [hasData]="myLeads.length > 0"
+            emptyMessage="No leads assigned to you."
+          ></app-chart-panel>
+
+          <app-chart-panel
+            [chartOptions]="predictionChartOption"
+            title="Next Month Prediction"
+            subtitle="Current score vs predicted score"
+            [hasData]="myPredictions.length > 0 || myPerformance.length > 0"
+            emptyMessage="No prediction data available."
+          ></app-chart-panel>
+        </section>
+
+      </section>
+
+      <!-- LEADS -->
+      <section *ngIf="activeSection === 'leads'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>My Leads</h2>
+          <p>Create and update your own leads. Delete access is restricted to administrators.</p>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <div>
+              <h2>Lead Records</h2>
+              <p>Leads assigned to you.</p>
+            </div>
+
+            <button
+              class="action-btn"
+              *ngIf="can(permissions.LEAD_CREATE)"
+              (click)="openLeadModal()"
+            >
+              + Add Lead
+            </button>
+          </div>
+
+          <app-data-table-panel
+            [columns]="leadColumns"
+            [rows]="myLeads"
+            [actions]="getLeadActions()"
+            [pageSize]="10"
+            maxTableHeight="430px"
+            emptyMessage="No leads found for your account."
+            [enableExport]="true"
+            exportFileName="ic-team-leads-report"
+            (actionClick)="onLeadAction($event)"
+          ></app-data-table-panel>
+        </div>
+
+      </section>
+
+      <!-- PERFORMANCE -->
+      <section *ngIf="activeSection === 'performance'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>My Performance</h2>
+          <p>Monthly performance score, target achievement and AI prediction.</p>
+        </div>
+
+        <section class="chart-grid two">
+          <app-chart-panel
+            [chartOptions]="performanceChartOption"
+            title="My Performance Trend"
+            subtitle="Monthly performance score history"
+            [hasData]="myPerformance.length > 0"
+            emptyMessage="No performance records found."
+          ></app-chart-panel>
+
+          <app-chart-panel
+            [chartOptions]="predictionChartOption"
+            title="Next Month Prediction"
+            subtitle="AI predicted performance score"
+            [hasData]="myPredictions.length > 0 || myPerformance.length > 0"
+            emptyMessage="No prediction data available."
+          ></app-chart-panel>
+        </section>
+
+        <app-data-table-panel
+          title="Performance History"
+          subtitle="Your monthly performance records."
+          [columns]="performanceColumns"
+          [rows]="myPerformance"
+          emptyMessage="No performance records found for your account."
+          [enableExport]="true"
+          exportFileName="ic-performance-report"
+        ></app-data-table-panel>
+
+      </section>
+
+      <!-- RECOMMENDATIONS -->
+      <section *ngIf="activeSection === 'recommendations'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>My Recommendations</h2>
+          <p>AI-generated suggestions to improve lead follow-up and performance.</p>
+        </div>
+
+        <app-data-table-panel
+          title="My Recommendations"
+          subtitle="AI-generated suggestions assigned to your profile."
+          [columns]="recommendationColumns"
+          [rows]="myRecommendations"
+          emptyMessage="No recommendations found for your account."
+          [enableExport]="true"
+          exportFileName="ic-recommendation-report"
+        ></app-data-table-panel>
+
+      </section>
+
+    </ng-container>
+
+  </main>
+
+  <app-lead-form-modal
+    [isOpen]="isLeadModalOpen"
+    [selectedLead]="selectedLeadForEdit"
+    [loggedUserId]="loggedUser?.id || null"
+    assignMode="self"
+    [readOnly]="isLeadViewMode"
+    (close)="closeLeadModal()"
+    (save)="createLead($event)"
+    (update)="updateLead($event)"
+  ></app-lead-form-modal>
+
+</div>

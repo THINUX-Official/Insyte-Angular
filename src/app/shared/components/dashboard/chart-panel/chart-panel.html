@@ -1,0 +1,25 @@
+<article class="chart-panel">
+  <div class="panel-title" *ngIf="title || subtitle">
+    <div>
+      <h2 *ngIf="title">{{ title }}</h2>
+      <p *ngIf="subtitle">{{ subtitle }}</p>
+    </div>
+  </div>
+
+  <ng-container *ngIf="hasData; else emptyChart">
+    <div
+      echarts
+      [options]="chartOptions"
+      class="chart"
+      [style.height]="height"
+    ></div>
+  </ng-container>
+
+  <ng-template #emptyChart>
+    <app-empty-state
+      icon="📊"
+      title="No chart data"
+      [message]="emptyMessage"
+    ></app-empty-state>
+  </ng-template>
+</article>

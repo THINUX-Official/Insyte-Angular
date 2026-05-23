@@ -1,0 +1,220 @@
+<article class="table-panel">
+
+  <div class="panel-title" *ngIf="title || subtitle || enableExport">
+    <div>
+      <h2 *ngIf="title">{{ title }}</h2>
+      <p *ngIf="subtitle">{{ subtitle }}</p>
+    </div>
+
+    <button
+      *ngIf="enableExport"
+      type="button"
+      class="export-btn"
+      [disabled]="!rows || rows.length === 0"
+      (click)="exportCsv()">
+      ⬇ Export CSV
+    </button>
+  </div>
+
+  <app-empty-state
+    *ngIf="rows.length === 0"
+    icon="📭"
+    title="No records found"
+    [message]="emptyMessage"
+  ></app-empty-state>
+
+  <ng-container *ngIf="rows.length > 0">
+
+    <div class="table-toolbar">
+      <div class="filter-left">
+
+        <div class="search-box" *ngIf="searchable">
+          <span>🔎</span>
+          <input
+            type="text"
+            [(ngModel)]="searchText"
+            (ngModelChange)="onSearchChange()"
+            [placeholder]="searchPlaceholder"
+          >
+        </div>
+
+        <label class="filter-control" *ngIf="enableStatusFilter">
+          {{ statusFilterLabel }}
+          <select
+            [(ngModel)]="selectedStatus"
+            (ngModelChange)="onStatusChange()"
+          >
+            <option value="">All</option>
+            <option *ngFor="let status of statusOptions" [value]="status">
+              {{ status.replaceAll('_', ' ') }}
+            </option>
+          </select>
+        </label>
+
+        <ng-container *ngIf="enableDateFilter">
+          <label class="filter-control">
+            From
+            <input
+              type="date"
+              [(ngModel)]="dateFrom"
+              (ngModelChange)="onDateChange()"
+            >
+          </label>
+
+          <label class="filter-control">
+            To
+            <input
+              type="date"
+              [(ngModel)]="dateTo"
+              (ngModelChange)="onDateChange()"
+            >
+          </label>
+        </ng-container>
+
+        <button
+          type="button"
+          class="clear-filter-btn"
+          *ngIf="hasActiveFilters()"
+          (click)="clearFilters()"
+        >
+          Clear
+        </button>
+
+      </div>
+
+      <div class="filter-right">
+        <div class="record-count">
+          Showing
+          <strong>{{ showingFrom }}</strong>
+          to
+          <strong>{{ showingTo }}</strong>
+          of
+          <strong>{{ totalRows }}</strong>
+          records
+        </div>
+
+        <label class="page-size-control">
+          Rows per page
+          <select [value]="pageSize" (change)="onPageSizeChange($event)">
+            <option
+              *ngFor="let option of pageSizeOptions"
+              [value]="option"
+            >
+              {{ option }}
+            </option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <div
+      class="table-scroll"
+      [style.max-height]="maxTableHeight"
+    >
+      <table>
+        <thead>
+        <tr>
+          <th *ngFor="let column of columns">
+            {{ column.label }}
+          </th>
+
+          <th *ngIf="actions.length > 0">
+            Actions
+          </th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr class="actions-header" *ngFor="let row of visibleRows; trackBy: trackByIndex">
+
+          <td *ngFor="let column of columns">
+            <ng-container [ngSwitch]="column.type">
+
+              <span *ngSwitchCase="'currency'">
+                {{ getValue(row, column) === '-' ? '-' : (getValue(row, column) | number:'1.2-2') }}
+              </span>
+
+              <span *ngSwitchCase="'number'">
+                {{ getValue(row, column) === '-' ? '-' : (getValue(row, column) | number:'1.2-2') }}
+              </span>
+
+              <span
+                *ngSwitchCase="'badge'"
+                class="badge"
+                [ngClass]="getBadgeClass(getValue(row, column))"
+              >
+                {{ getValue(row, column) }}
+              </span>
+
+              <span *ngSwitchDefault>
+                {{ getValue(row, column) }}
+              </span>
+
+            </ng-container>
+          </td>
+
+          <td *ngIf="actions.length > 0" class="actions-cell">
+            <div class="action-buttons">
+              <button
+                type="button"
+                class="small-btn"
+                *ngFor="let action of actions"
+                [ngClass]="action.tone || 'primary'"
+                (click)="onAction(action, row)"
+              >
+                <span *ngIf="action.icon">{{ action.icon }}</span>
+                {{ action.label }}
+              </button>
+            </div>
+          </td>
+
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-bar">
+
+      <div class="pagination-info">
+        Page <strong>{{ currentPage }}</strong> of <strong>{{ totalPages }}</strong>
+      </div>
+
+      <div class="pagination-actions">
+        <button
+          type="button"
+          (click)="goToFirstPage()"
+          [disabled]="!canGoPrevious"
+        >
+          « First
+        </button>
+
+        <button
+          type="button"
+          (click)="goToPreviousPage()"
+          [disabled]="!canGoPrevious"
+        >
+          ‹ Previous
+        </button>
+
+        <button
+          type="button"
+          (click)="goToNextPage()"
+          [disabled]="!canGoNext"
+        >
+          Next ›
+        </button>
+
+        <button
+          type="button"
+          (click)="goToLastPage()"
+          [disabled]="!canGoNext"
+        >
+          Last »
+        </button>
+      </div>
+
+    </div>
+
+  </ng-container>
+
+</article>

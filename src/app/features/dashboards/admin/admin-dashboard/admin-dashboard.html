@@ -1,0 +1,357 @@
+<div class="admin-shell">
+
+  <app-dashboard-sidebar
+    title="Insyte"
+    subtitle="Admin Console"
+    logoText="AI"
+    theme="admin"
+    [menuItems]="getVisibleMenuItems()"
+    [activeSection]="activeSection"
+    [userInfo]="sidebarUserInfo"
+    (sectionChange)="setActiveSection($event)"
+  ></app-dashboard-sidebar>
+
+  <main class="admin-main">
+
+    <app-dashboard-topbar
+      pageLabel="Admin Control Center"
+      [title]="'Welcome back, ' + displayName"
+      [subtitle]="loggedUser?.email || 'admin@gmail.com'"
+      theme="admin"
+      [userInfo]="sidebarUserInfo"
+      [showPipeline]="true"
+      [showRefresh]="false"
+      [isPipelineRunning]="isPipelineRunning"
+      (pipelineClick)="runAiPipeline()"
+      (refreshClick)="loadDashboardData()"
+      (logoutClick)="logout()"
+    ></app-dashboard-topbar>
+
+    <app-alerts-container></app-alerts-container>
+
+    <div class="loader-card inline-loader" *ngIf="isLoading">
+      Loading dashboard data...
+    </div>
+
+    <ng-container>
+
+      <!-- OVERVIEW -->
+      <section *ngIf="activeSection === 'overview'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>System Overview</h2>
+          <p>Important system summary. Detailed operations are available from the side menu.</p>
+        </div>
+
+        <section class="summary-grid">
+          <app-summary-card
+            *ngFor="let card of summaryCards"
+            [card]="card"
+          ></app-summary-card>
+        </section>
+
+        <section class="mini-grid">
+          <article>
+            <span>Total Agents</span>
+            <strong>{{ getTotalAgents() }}</strong>
+          </article>
+
+          <article>
+            <span>Active Leads</span>
+            <strong>{{ getActiveLeads() }}</strong>
+          </article>
+
+          <article>
+            <span>Completed Leads</span>
+            <strong>{{ getCompletedLeads() }}</strong>
+          </article>
+
+          <article>
+            <span>Average Score</span>
+            <strong>{{ getAveragePerformanceScore() | number:'1.2-2' }}</strong>
+          </article>
+        </section>
+
+        <section class="chart-grid two">
+          <app-chart-panel
+            [chartOptions]="leadStatusChartOption"
+            title="Lead Status Distribution"
+            subtitle="Current lead status overview"
+            [hasData]="leads.length > 0"
+            emptyMessage="No lead data available."
+          ></app-chart-panel>
+
+          <app-chart-panel
+            [chartOptions]="predictionChartOption"
+            title="AI Prediction Risk"
+            subtitle="Prediction risk level summary"
+            [hasData]="aiPredictions.length > 0"
+            emptyMessage="No prediction data available."
+          ></app-chart-panel>
+        </section>
+
+      </section>
+
+      <!-- USERS -->
+      <section *ngIf="activeSection === 'users'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>User Management</h2>
+          <p>Create, update, view and deactivate users by role hierarchy.</p>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <div>
+              <h2>Users</h2>
+              <p>Active users in the system.</p>
+            </div>
+
+            <button
+              class="action-btn"
+              *ngIf="can(permissions.USER_CREATE)"
+              (click)="openUserModal()"
+            >
+              + Add User
+            </button>
+          </div>
+
+          <app-data-table-panel
+            [columns]="userColumns"
+            [rows]="users"
+            [actions]="getUserActions()"
+            [pageSize]="10"
+            maxTableHeight="430px"
+            emptyMessage="No users found."
+            [enableExport]="true"
+            exportFileName="admin-all-user-report"
+            (actionClick)="onUserAction($event)"
+          ></app-data-table-panel>
+        </div>
+
+      </section>
+
+      <!-- LEADS -->
+      <section *ngIf="activeSection === 'leads'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>Lead Management</h2>
+          <p>Create, update, assign and monitor insurance leads.</p>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <div>
+              <h2>Leads</h2>
+              <p>Lead records available in the system.</p>
+            </div>
+          </div>
+
+          <app-data-table-panel
+            [columns]="leadColumns"
+            [rows]="leads"
+            [actions]="getLeadActions()"
+            [pageSize]="10"
+            maxTableHeight="480px"
+            emptyMessage="No leads found."
+            [enableExport]="true"
+            exportFileName="admin-all-leads-report"
+            (actionClick)="onLeadAction($event)"
+          ></app-data-table-panel>
+        </div>
+
+      </section>
+
+      <!-- AI ANALYTICS -->
+      <section *ngIf="activeSection === 'ai'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>AI Analytics</h2>
+          <p>Agent performance predictions and AI risk levels.</p>
+        </div>
+
+        <section class="chart-grid two">
+          <app-chart-panel
+            [chartOptions]="performanceChartOption"
+            title="Top Agent Performance"
+            subtitle="Performance score comparison"
+            [hasData]="performanceRecords.length > 0"
+            emptyMessage="No performance data available."
+          ></app-chart-panel>
+
+          <app-chart-panel
+            [chartOptions]="predictionChartOption"
+            title="AI Prediction Risk"
+            subtitle="Risk level distribution"
+            [hasData]="aiPredictions.length > 0"
+            emptyMessage="No prediction data available."
+          ></app-chart-panel>
+        </section>
+
+        <app-data-table-panel
+          title="Top Agent Performance"
+          subtitle="Best performing agents for May 2026."
+          [columns]="performanceColumns"
+          [rows]="getTopPerformers()"
+          emptyMessage="No performance records found."
+          [enableExport]="true"
+          exportFileName="admin-top-agent-performance-report"
+        ></app-data-table-panel>
+
+        <app-location-analytics
+          [year]="2026"
+          [month]="5"
+          [limit]="5"
+          [showGenerateButton]="true">
+        </app-location-analytics>
+
+      </section>
+
+      <!-- FRAUD -->
+      <section *ngIf="activeSection === 'fraud'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>Fraud & Risk Monitoring</h2>
+          <p>Open anomaly alerts generated by the AI fraud detection model.</p>
+        </div>
+
+        <section class="chart-grid one">
+          <app-chart-panel
+            [chartOptions]="alertChartOption"
+            title="Fraud Alert Severity"
+            subtitle="Anomaly severity distribution"
+            [hasData]="fraudAlerts.length > 0"
+            emptyMessage="No fraud alerts available."
+          ></app-chart-panel>
+        </section>
+
+        <app-data-table-panel
+          title="Open Fraud Alerts"
+          subtitle="Latest alerts requiring review."
+          [columns]="[
+            { key: 'username', label: 'Agent' },
+            { key: 'alertType', label: 'Alert Type' },
+            { key: 'severity', label: 'Severity', type: 'badge' },
+            { key: 'status', label: 'Status', type: 'badge' },
+            { key: 'description', label: 'Description' }
+          ]"
+          [rows]="getOpenFraudAlerts()"
+          [actions]="getFraudActions()"
+          emptyMessage="No open fraud alerts found."
+          [enableExport]="true"
+          exportFileName="admin-open-fraud-alert-report"
+          (actionClick)="onFraudAction($event)"
+        ></app-data-table-panel>
+
+      </section>
+
+      <!-- RECOMMENDATIONS -->
+      <section *ngIf="activeSection === 'recommendations'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>AI Recommendations</h2>
+          <p>Generated recommendations for agents and supervisors.</p>
+        </div>
+
+        <app-data-table-panel
+          title="Latest Recommendations"
+          subtitle="AI-generated recommendations for performance improvement."
+          [columns]="recommendationColumns"
+          [rows]="getLatestRecommendations()"
+          emptyMessage="No recommendations found."
+          [enableExport]="true"
+          exportFileName="admin-recommendation-report"
+        ></app-data-table-panel>
+
+      </section>
+
+      <!-- ML EXPERIMENTS -->
+      <section *ngIf="activeSection === 'experiments'" class="dashboard-section">
+
+        <div class="section-title">
+          <h2>ML Experiments</h2>
+          <p>Model training and AI pipeline experiment evidence.</p>
+        </div>
+
+        <app-data-table-panel
+          title="ML Experiment Records"
+          subtitle="Model training and AI pipeline experiment evidence."
+          [columns]="mlExperimentColumns"
+          [rows]="mlExperiments"
+          emptyMessage="No ML experiment records found."
+          [enableExport]="true"
+          exportFileName="admin-ml-experiments-report"
+        ></app-data-table-panel>
+
+      </section>
+
+    </ng-container>
+
+  </main>
+
+  <div class="fraud-modal-backdrop" *ngIf="showFraudReviewModal">
+    <div class="fraud-modal">
+      <div class="fraud-modal-header">
+        <h3>Fraud Alert Review</h3>
+        <button type="button" class="close-btn" (click)="closeFraudReviewModal()">×</button>
+      </div>
+
+      <div class="fraud-modal-body" *ngIf="selectedFraudAlert">
+        <p>
+          <strong>Agent:</strong>
+          {{ selectedFraudAlert.nickname || selectedFraudAlert.username || selectedFraudAlert.agentId || 'N/A' }}
+        </p>
+
+        <p>
+          <strong>Risk Level:</strong>
+          {{ selectedFraudAlert.severity || 'N/A' }}
+        </p>
+
+        <p><strong>Status:</strong> {{ selectedFraudAlert.status || 'N/A' }}</p>
+
+        <p><strong>Alert Type:</strong> {{ selectedFraudAlert.alertType || 'N/A' }}</p>
+
+        <p><strong>Description:</strong> {{ selectedFraudAlert.description || 'N/A' }}</p>
+
+        <p>
+          <strong>Detected Date:</strong>
+          {{ selectedFraudAlert.detectedAt ? (selectedFraudAlert.detectedAt | date:'medium') : 'N/A' }}
+        </p>
+      </div>
+
+      <div class="fraud-modal-actions">
+        <button type="button" class="btn-secondary" (click)="closeFraudReviewModal()">
+          Close
+        </button>
+
+        <button type="button" class="btn-warning" (click)="markFraudAsUnderReview()">
+          Mark as Under Review
+        </button>
+
+        <button type="button" class="btn-success" (click)="resolveSelectedFraudAlert()">
+          Resolve
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <app-user-form-modal
+    [isOpen]="isUserModalOpen"
+    assignMode="manual"
+    [users]="users"
+    [selectedUser]="selectedUserForEdit"
+    (close)="closeUserModal()"
+    (save)="createUser($event)"
+    (update)="updateUser($event)"
+  ></app-user-form-modal>
+
+  <app-lead-form-modal
+    [isOpen]="isLeadModalOpen"
+    [selectedLead]="selectedLeadForEdit"
+    [users]="users"
+    assignMode="manual"
+    [readOnly]="isLeadViewMode"
+    (close)="closeLeadModal()"
+    (update)="updateLead($event)"
+  ></app-lead-form-modal>
+</div>

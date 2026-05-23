@@ -1,0 +1,41 @@
+<header class="dashboard-topbar" [ngClass]="theme">
+  <div class="topbar-content">
+    <p class="page-label">{{ pageLabel }}</p>
+
+    <h1>{{ title }}</h1>
+
+    <span class="subtitle">
+      {{ subtitle || userInfo.email || '' }}
+    </span>
+  </div>
+
+  <div class="topbar-actions">
+    <button
+      type="button"
+      class="pipeline-btn"
+      *ngIf="showPipeline"
+      (click)="onPipeline()"
+      [disabled]="isPipelineRunning"
+    >
+      <span *ngIf="!isPipelineRunning">🚀 Run AI Pipeline</span>
+      <span *ngIf="isPipelineRunning">⏳ Running...</span>
+    </button>
+
+    <button
+      type="button"
+      class="refresh-btn"
+      *ngIf="showRefresh"
+      (click)="onRefresh()"
+    >
+      🔄 Refresh
+    </button>
+
+    <button
+      type="button"
+      class="logout-btn"
+      (click)="onLogout()"
+    >
+      Logout
+    </button>
+  </div>
+</header>
